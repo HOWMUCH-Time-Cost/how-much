@@ -146,7 +146,7 @@ function App() {
 
   const updateCurrencyDisplay = useCallback((code) => {
     if (code && currencyInfo[code]) {
-      setCurrencyDisplay(currencyInfo[code].flag)
+      setCurrencyDisplay(currencyInfo[code].symbol)
     } else {
       setCurrencyDisplay('-')
     }
@@ -361,7 +361,7 @@ function App() {
 
           <div className="space-y-2 relative">
             <Label htmlFor="salary" className="sr-only">Monthly Net Salary</Label>
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-xl pointer-events-none z-10">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-xl pointer-events-none z-10 text-black opacity-50">
               {currencyDisplay}
             </div>
             <Input
