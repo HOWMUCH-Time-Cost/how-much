@@ -309,11 +309,28 @@ function App() {
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="fixed inset-0 w-screen h-screen rounded-none p-4 md:p-6" align="start">
+              <PopoverContent 
+                className="fixed inset-0 !w-screen !h-screen !rounded-none !p-0 z-[9999] !m-0 !border-0" 
+                align="start"
+                sideOffset={0}
+                style={{ 
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  width: '100vw',
+                  height: '100vh',
+                  maxWidth: '100vw',
+                  maxHeight: '100vh',
+                }}
+              >
                 <Command className="h-full flex flex-col">
-                  <CommandInput placeholder="Search currency..." className="h-12 text-base" />
-                  <CommandList className="flex-1 mt-2">
-                    <CommandEmpty>No currency found.</CommandEmpty>
+                  <div className="p-4 border-b sticky top-0 bg-background z-10">
+                    <CommandInput placeholder="Search currency..." className="h-12 text-base" />
+                  </div>
+                  <CommandList className="flex-1 overflow-y-auto">
+                    <CommandEmpty className="py-8">No currency found.</CommandEmpty>
                     <CommandGroup>
                       {currencies.map((curr) => (
                         <CommandItem
