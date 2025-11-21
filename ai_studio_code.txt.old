@@ -1,10 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Time Cost: How many days does this cost?",
-  "version": "1.1",
+  "version": "1.0",
   "description": "Converts product prices into number of work days based on your monthly salary.",
-  "permissions": ["storage", "tabs"],
-  "host_permissions": ["https://v6.exchangerate-api.com/*"],
+  "permissions": ["storage"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -20,4 +19,3 @@
     }
   ]
 }
-
