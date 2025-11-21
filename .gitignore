@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Old files (can be removed later)
+ai_studio_code.txt
+ai_studio_code.html
+ai_studio_code.js
+ai_studio_code-2.js
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build files
+*.log
+dist/
+build/
+
