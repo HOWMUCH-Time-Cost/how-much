@@ -293,55 +293,37 @@ function App() {
             <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   role="combobox"
                   aria-expanded={open}
                   className={cn(
-                    "w-full justify-between border-0 shadow-none",
+                    "w-full justify-between",
                     error.field === 'currency' && 'border-destructive'
                   )}
                 >
                   {selectedCurrency ? (
-                    <span className="truncate text-left flex-1 min-w-0 mr-2">{selectedCurrency.displayText}</span>
+                    <span className="flex-1">{selectedCurrency.displayText}</span>
                   ) : (
-                    <span className="text-muted-foreground truncate text-left flex-1 min-w-0 mr-2">Search or select currency...</span>
+                    <span className="text-muted-foreground flex-1 w-full">Search or select currency...</span>
                   )}
-                  <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent 
-                className="fixed inset-0 !w-screen !h-screen !rounded-none !p-0 z-[9999] !m-0 !border-0" 
-                align="start"
-                sideOffset={0}
-                style={{ 
-                  position: 'fixed',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  width: '100vw',
-                  height: '100vh',
-                  maxWidth: '100vw',
-                  maxHeight: '100vh',
-                }}
-              >
-                <Command className="h-full flex flex-col">
-                  <div className="sticky top-0 bg-background z-10 border-b">
-                    <CommandInput placeholder="Search currency..." className="h-12 text-base border-0" />
-                  </div>
-                  <CommandList className="flex-1 overflow-y-auto">
-                    <CommandEmpty className="py-8">No currency found.</CommandEmpty>
+              <PopoverContent className="w-[320px] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Search currency..." className="h-9" />
+                  <CommandList>
+                    <CommandEmpty>No currency found.</CommandEmpty>
                     <CommandGroup>
                       {currencies.map((curr) => (
                         <CommandItem
                           key={curr.code}
                           value={`${curr.code} ${curr.country} ${curr.symbol}`}
                           onSelect={() => handleCurrencySelect(curr.code)}
-                          className="py-3 text-base"
                         >
                           <Check
                             className={cn(
-                              "mr-2 h-5 w-5",
+                              "mr-2 h-4 w-4",
                               currency === curr.code ? "opacity-100" : "opacity-0"
                             )}
                           />
@@ -360,22 +342,16 @@ function App() {
 
           <div className="space-y-2 relative">
             <Label htmlFor="salary" className="sr-only">Monthly Net Salary</Label>
-            {currencyDisplay !== '-' && (
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-xl pointer-events-none z-10">
-                {currencyDisplay}
-              </div>
-            )}
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-xl pointer-events-none z-10">
+              {currencyDisplay}
+            </div>
             <Input
               id="salary"
               type="text"
               placeholder="0"
               value={salary}
               onChange={handleSalaryChange}
-              className={cn(
-                currencyDisplay !== '-' ? 'pl-12' : '',
-                'border-0 shadow-none',
-                error.field === 'salary' && 'border-destructive'
-              )}
+              className={`pl-12 ${error.field === 'salary' ? 'border-destructive' : ''}`}
               inputMode="numeric"
             />
             {error.field === 'salary' && (
@@ -383,7 +359,7 @@ function App() {
             )}
           </div>
 
-          <Button onClick={handleSave} className="w-full lowercase border-0 shadow-none" size="default">
+          <Button onClick={handleSave} className="w-full lowercase" size="default">
             save & apply
           </Button>
 
