@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const salaryInput = document.getElementById('salary');
-  const currencySelect = document.getElementById('currency');
+  const currencyInput = document.getElementById('currency');
+  const currencyList = document.getElementById('currencyList');
   const currencyDisplay = document.getElementById('currencyDisplay');
   const saveBtn = document.getElementById('saveBtn');
   const statusDiv = document.getElementById('status');
@@ -142,6 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Currency display mapping - will be populated from API
   let currencyMap = {};
+  // Store all currencies for search functionality
+  let allCurrencies = [];
 
   // Fetch currencies from API and populate dropdown
   async function fetchCurrencies() {
@@ -150,13 +153,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
       
       if (data.result === 'success' && data.conversion_rates) {
-        // Clear existing options except the first one
-        currencySelect.innerHTML = '<option value="" disabled selected>Choose a currency</option>';
+        // Clear existing options and data
+        currencyList.innerHTML = '';
+        allCurrencies = [];
+        currencyMap = {};
         
         // Get all currency codes from API response
         const currencies = Object.keys(data.conversion_rates).sort();
         
-        // Populate dropdown and build currency map (only currencies with country info)
+        // Populate datalist and build currency map (only currencies with country info)
         currencies.forEach(code => {
           // Only include currencies that have country info in our mapping
           if (!currencyInfo[code] || !currencyInfo[code].country) {
@@ -164,14 +169,24 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           
           const info = currencyInfo[code];
+          const upperCode = code.toUpperCase();
+          
+          // Store currency info for search
+          allCurrencies.push({
+            code: upperCode,
+            country: info.country,
+            symbol: info.symbol,
+            flag: info.flag,
+            displayText: `${info.flag} ${info.country} | ${upperCode} | ${info.symbol}`
+          });
           
           const option = document.createElement('option');
-          option.value = code;
-          option.textContent = `${info.flag} ${info.country} | ${code} | ${info.symbol}`;
-          currencySelect.appendChild(option);
+          option.value = upperCode;
+          option.textContent = `${info.flag} ${info.country} | ${upperCode} | ${info.symbol}`;
+          currencyList.appendChild(option);
           
-          // Build currency map for display
-          currencyMap[code] = `${info.flag} ${code} (${info.symbol})`;
+          // Build currency map for display and search
+          currencyMap[upperCode] = `${info.flag} ${info.country} | ${upperCode} | ${info.symbol}`;
         });
         
         // Load saved settings after currencies are loaded
@@ -191,7 +206,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Fallback to default currencies if API fails
   function setupDefaultCurrencies() {
     const defaults = ['USD', 'EUR', 'BRL', 'GBP', 'JPY', 'AUD', 'CAD'];
-    currencySelect.innerHTML = '<option value="" disabled selected>Choose a currency</option>';
+    currencyList.innerHTML = '';
+    allCurrencies = [];
+    currencyMap = {};
     
     defaults.forEach(code => {
       // Only include currencies that have country info in our mapping
@@ -200,11 +217,22 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       const info = currencyInfo[code];
+      const upperCode = code.toUpperCase();
+      
+      // Store currency info for search
+      allCurrencies.push({
+        code: upperCode,
+        country: info.country,
+        symbol: info.symbol,
+        flag: info.flag,
+        displayText: `${info.flag} ${info.country} | ${upperCode} | ${info.symbol}`
+      });
+      
       const option = document.createElement('option');
-      option.value = code;
-      option.textContent = `${info.flag} ${info.country} | ${code} | ${info.symbol}`;
-      currencySelect.appendChild(option);
-      currencyMap[code] = `${info.flag} ${code} (${info.symbol})`;
+      option.value = upperCode;
+      option.textContent = `${info.flag} ${info.country} | ${upperCode} | ${info.symbol}`;
+      currencyList.appendChild(option);
+      currencyMap[upperCode] = `${info.flag} ${info.country} | ${upperCode} | ${info.symbol}`;
     });
     
     loadSavedSettings();
@@ -268,10 +296,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Update currency display (show only flag inside input)
   function updateCurrencyDisplay() {
-    const selectedCurrency = currencySelect.value;
-    if (selectedCurrency) {
+    const selectedCurrency = currencyInput.value.trim().toUpperCase();
+    if (selectedCurrency && currencyMap[selectedCurrency]) {
       const info = getCurrencyInfo(selectedCurrency);
       currencyDisplay.textContent = info.flag;
+      // Update input to show the full currency display if user selects from datalist
+      if (currencyInput.value !== selectedCurrency) {
+        currencyInput.value = selectedCurrency;
+      }
     } else {
       currencyDisplay.textContent = '-';
     }
@@ -280,8 +312,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Update salary input formatting
   function updateSalaryDisplay() {
     const value = salaryInput.value;
-    const currency = currencySelect.value;
-    if (value && currency) {
+    const currency = currencyInput.value.trim().toUpperCase();
+    if (value && currency && currencyMap[currency]) {
       const formatted = formatNumber(value, currency);
       if (formatted !== value) {
         const cursorPos = salaryInput.selectionStart;
@@ -298,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function loadSavedSettings() {
   chrome.storage.local.get(['userSalary', 'userCurrency'], (data) => {
       if (data.userCurrency && currencyMap[data.userCurrency]) {
-      currencySelect.value = data.userCurrency;
+      currencyInput.value = data.userCurrency;
       updateCurrencyDisplay();
     }
     if (data.userSalary) {
@@ -307,20 +339,95 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   }
 
-  // Update currency display when selection changes
-  currencySelect.addEventListener('change', () => {
-    updateCurrencyDisplay();
-    // Reformat salary input with new currency format
-    if (salaryInput.value) {
-      const numValue = parseFormattedNumber(salaryInput.value, currencySelect.value || 'USD');
-      salaryInput.value = formatNumber(numValue.toString(), currencySelect.value);
+  // Filter datalist options based on search input
+  function filterCurrencyOptions(searchTerm) {
+    if (!searchTerm || searchTerm.trim() === '') {
+      // Show all currencies
+      currencyList.innerHTML = '';
+      allCurrencies.forEach(currency => {
+        const option = document.createElement('option');
+        option.value = currency.code;
+        option.textContent = currency.displayText;
+        currencyList.appendChild(option);
+      });
+      return;
+    }
+    
+    const term = searchTerm.toLowerCase().trim();
+    currencyList.innerHTML = '';
+    
+    // Filter currencies that match the search term (country, code, or symbol)
+    const filtered = allCurrencies.filter(currency => {
+      return currency.code.toLowerCase().includes(term) ||
+             currency.country.toLowerCase().includes(term) ||
+             currency.symbol.toLowerCase().includes(term);
+    });
+    
+    // Update datalist with filtered options
+    filtered.forEach(currency => {
+      const option = document.createElement('option');
+      option.value = currency.code;
+      option.textContent = currency.displayText;
+      currencyList.appendChild(option);
+    });
+  }
+  
+  // Update currency display when input changes
+  currencyInput.addEventListener('input', (e) => {
+    const value = e.target.value;
+    filterCurrencyOptions(value);
+    
+    // Try to find exact match or partial match
+    const upperValue = value.trim().toUpperCase();
+    if (upperValue && currencyMap[upperValue]) {
+      updateCurrencyDisplay();
+    } else {
+      // Check if input matches any currency partially
+      const matched = allCurrencies.find(curr => 
+        curr.code === upperValue ||
+        curr.code.toLowerCase().startsWith(upperValue.toLowerCase()) ||
+        curr.country.toLowerCase().includes(value.toLowerCase()) ||
+        curr.symbol.toLowerCase().includes(value.toLowerCase())
+      );
+      
+      if (matched) {
+        currencyDisplay.textContent = matched.flag;
+      } else {
+        currencyDisplay.textContent = '-';
+      }
+    }
+  });
+  
+  currencyInput.addEventListener('change', () => {
+    // When user selects from datalist or blurs, normalize to currency code
+    const value = currencyInput.value.trim().toUpperCase();
+    if (value && currencyMap[value]) {
+      currencyInput.value = value;
+      updateCurrencyDisplay();
+      // Reformat salary input with new currency format
+      if (salaryInput.value) {
+        const numValue = parseFormattedNumber(salaryInput.value, value || 'USD');
+        salaryInput.value = formatNumber(numValue.toString(), value);
+      }
+    } else {
+      // Try to find a match
+      const matched = allCurrencies.find(curr => 
+        curr.code === value ||
+        curr.code.toLowerCase() === value.toLowerCase() ||
+        curr.country.toLowerCase() === value.toLowerCase()
+      );
+      
+      if (matched) {
+        currencyInput.value = matched.code;
+        updateCurrencyDisplay();
+      }
     }
   });
 
   // Format salary input as user types
   salaryInput.addEventListener('input', (e) => {
-    const currency = currencySelect.value;
-    if (currency) {
+    const currency = currencyInput.value.trim().toUpperCase();
+    if (currency && currencyMap[currency]) {
       const numValue = parseFormattedNumber(e.target.value, currency);
       if (numValue > 0) {
         e.target.value = formatNumber(numValue.toString(), currency);
@@ -330,13 +437,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Save settings
   saveBtn.addEventListener('click', () => {
-    const currency = currencySelect.value;
+    const currency = currencyInput.value.trim().toUpperCase();
     
-    if (!currency) {
-      currencySelect.focus();
-      currencySelect.style.borderColor = 'hsl(0 84.2% 60.2%)';
+    if (!currency || !currencyMap[currency]) {
+      currencyInput.focus();
+      currencyInput.style.borderColor = 'hsl(0 84.2% 60.2%)';
       setTimeout(() => {
-        currencySelect.style.borderColor = '';
+        currencyInput.style.borderColor = '';
       }, 2000);
       return;
     }
@@ -384,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  currencySelect.addEventListener('keypress', (e) => {
+  currencyInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
       saveBtn.click();
     }
