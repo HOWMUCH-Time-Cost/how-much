@@ -534,7 +534,7 @@ function App() {
 
         <div className="space-y-2">
           <div className="relative">
-            <Label htmlFor="salary" className="sr-only">Monthly Net Salary</Label>
+            <Label htmlFor="salary" className="sr-only">{t('monthlyNetSalary', language)}</Label>
             <div className="absolute left-3 top-1 bottom-1 flex items-center text-base md:text-sm pointer-events-none z-10 text-black opacity-50 m-0">
               {currencyDisplay}
             </div>
@@ -554,7 +554,7 @@ function App() {
         </div>
 
         <Button onClick={handleSave} className="w-full lowercase" size="default">
-          save & apply
+          {t('saveAndApply', language)}
         </Button>
 
         {status.show && (
@@ -624,6 +624,14 @@ function App() {
                                 ) : (
                                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                                 )}
+                                <img
+                                  src={getFaviconUrl(domains[0])}
+                                  alt={`${groupName} favicon`}
+                                  className="h-4 w-4 rounded-sm"
+                                  onError={(e) => {
+                                    e.target.style.display = 'none'
+                                  }}
+                                />
                                 <span className="text-sm font-medium capitalize">{groupName}</span>
                                 <span className="text-xs text-muted-foreground">({domains.length})</span>
                               </div>
@@ -647,7 +655,17 @@ function App() {
                                     key={site}
                                     className="flex items-center justify-between px-4 py-2 hover:bg-accent/50 transition-colors"
                                   >
-                                    <span className="text-sm text-muted-foreground">{site}</span>
+                                    <div className="flex items-center gap-2">
+                                      <img
+                                        src={getFaviconUrl(site)}
+                                        alt={`${site} favicon`}
+                                        className="h-4 w-4 rounded-sm"
+                                        onError={(e) => {
+                                          e.target.style.display = 'none'
+                                        }}
+                                      />
+                                      <span className="text-sm text-muted-foreground">{site}</span>
+                                    </div>
                                     <Button
                                       onClick={() => handleRemoveSite(site)}
                                       size="icon"
@@ -664,7 +682,17 @@ function App() {
                           </>
                         ) : (
                           <div className="flex items-center justify-between p-2 hover:bg-accent transition-colors">
-                            <span className="text-sm font-medium">{domains[0]}</span>
+                            <div className="flex items-center gap-2">
+                              <img
+                                src={getFaviconUrl(domains[0])}
+                                alt={`${domains[0]} favicon`}
+                                className="h-4 w-4 rounded-sm"
+                                onError={(e) => {
+                                  e.target.style.display = 'none'
+                                }}
+                              />
+                              <span className="text-sm font-medium">{domains[0]}</span>
+                            </div>
                             <Button
                               onClick={() => handleRemoveSite(domains[0])}
                               size="icon"
