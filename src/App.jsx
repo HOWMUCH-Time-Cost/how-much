@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Check, ChevronsUpDown, Globe, X, Plus, ChevronDown, ChevronRight } from 'lucide-react'
+import { Check, ChevronsUpDown, Globe, X, Plus, ChevronDown, ChevronRight, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Spinner } from '@/components/ui/spinner'
 import {
   Command,
   CommandEmpty,
@@ -35,13 +36,13 @@ const API_URL = `https://v6.exchangerate-api.com/v6/${API_KEY}/latest/USD`
 
 const languages = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'es', name: 'Spanish', flag: '🇪🇸' },
-  { code: 'pt', name: 'Portuguese', flag: '🇧🇷' },
-  { code: 'de', name: 'German', flag: '🇩🇪' },
-  { code: 'zh', name: 'Chinese', flag: '🇨🇳' },
-  { code: 'ja', name: 'Japanese', flag: '🇯🇵' },
-  { code: 'ru', name: 'Russian', flag: '🇷🇺' },
-  { code: 'ar', name: 'Arabic', flag: '🇸🇦' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'pt', name: 'Português', flag: '🇧🇷' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'zh', name: '中文', flag: '🇨🇳' },
+  { code: 'ja', name: '日本語', flag: '🇯🇵' },
+  { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+  { code: 'ar', name: 'العربية', flag: '🇸🇦' },
 ]
 
 // Translations
@@ -70,6 +71,17 @@ const translations = {
     removeGroup: 'Remove group',
     removeSite: 'Remove site',
     addSite: 'Add site',
+    wageCalculator: 'Wage Calculator',
+    wageCalculatorDescription: 'Calculate your wage in different periods',
+    hourlyWage: 'Hourly wage',
+    hoursPerWeek: 'Hours per week',
+    annualSalary: 'Annual salary',
+    yourWageAs: 'Your wage as:',
+    daily: 'Daily',
+    monthly: 'Monthly',
+    weekly: 'Weekly',
+    biweekly: 'Biweekly',
+    salarySettings: 'Salary settings',
   },
   es: {
     selectLanguage: 'Seleccionar idioma',
@@ -95,6 +107,17 @@ const translations = {
     removeGroup: 'Eliminar grupo',
     removeSite: 'Eliminar sitio',
     addSite: 'Agregar sitio',
+    wageCalculator: 'Calculadora de Salario',
+    wageCalculatorDescription: 'Calcula tu salario en diferentes períodos',
+    hourlyWage: 'Salario por hora',
+    hoursPerWeek: 'Horas por semana',
+    annualSalary: 'Salario anual',
+    yourWageAs: 'Tu salario como:',
+    daily: 'Diario',
+    monthly: 'Mensual',
+    weekly: 'Semanal',
+    biweekly: 'Quincenal',
+    salarySettings: 'Configuración de salario',
   },
   pt: {
     selectLanguage: 'Selecionar idioma',
@@ -120,6 +143,17 @@ const translations = {
     removeGroup: 'Remover grupo',
     removeSite: 'Remover site',
     addSite: 'Adicionar site',
+    wageCalculator: 'Calculadora de Salário',
+    wageCalculatorDescription: 'Calcule seu salário em diferentes períodos',
+    hourlyWage: 'Salário por hora',
+    hoursPerWeek: 'Horas por semana',
+    annualSalary: 'Salário anual',
+    yourWageAs: 'Seu salário como:',
+    daily: 'Diário',
+    monthly: 'Mensal',
+    weekly: 'Semanal',
+    biweekly: 'Quinzenal',
+    salarySettings: 'Configurações de salário',
   },
   de: {
     selectLanguage: 'Sprache auswählen',
@@ -145,6 +179,17 @@ const translations = {
     removeGroup: 'Gruppe entfernen',
     removeSite: 'Website entfernen',
     addSite: 'Website hinzufügen',
+    wageCalculator: 'Gehaltsrechner',
+    wageCalculatorDescription: 'Berechnen Sie Ihr Gehalt in verschiedenen Zeiträumen',
+    hourlyWage: 'Stundenlohn',
+    hoursPerWeek: 'Stunden pro Woche',
+    annualSalary: 'Jahresgehalt',
+    yourWageAs: 'Ihr Gehalt als:',
+    daily: 'Täglich',
+    monthly: 'Monatlich',
+    weekly: 'Wöchentlich',
+    biweekly: 'Zweiwöchentlich',
+    salarySettings: 'Gehaltseinstellungen',
   },
   zh: {
     selectLanguage: '选择语言',
@@ -170,6 +215,17 @@ const translations = {
     removeGroup: '移除组',
     removeSite: '移除网站',
     addSite: '添加网站',
+    wageCalculator: '工资计算器',
+    wageCalculatorDescription: '计算不同时期的工资',
+    hourlyWage: '时薪',
+    hoursPerWeek: '每周工作小时',
+    annualSalary: '年薪',
+    yourWageAs: '您的工资为:',
+    daily: '日薪',
+    monthly: '月薪',
+    weekly: '周薪',
+    biweekly: '双周薪',
+    salarySettings: '工资设置',
   },
   ja: {
     selectLanguage: '言語を選択',
@@ -195,6 +251,17 @@ const translations = {
     removeGroup: 'グループを削除',
     removeSite: 'サイトを削除',
     addSite: 'サイトを追加',
+    wageCalculator: '給与計算機',
+    wageCalculatorDescription: '異なる期間の給与を計算する',
+    hourlyWage: '時給',
+    hoursPerWeek: '週間労働時間',
+    annualSalary: '年収',
+    yourWageAs: '給与として:',
+    daily: '日給',
+    monthly: '月給',
+    weekly: '週給',
+    biweekly: '隔週給',
+    salarySettings: '給与設定',
   },
   ru: {
     selectLanguage: 'Выбрать язык',
@@ -220,6 +287,17 @@ const translations = {
     removeGroup: 'Удалить группу',
     removeSite: 'Удалить сайт',
     addSite: 'Добавить сайт',
+    wageCalculator: 'Калькулятор зарплаты',
+    wageCalculatorDescription: 'Рассчитайте вашу зарплату за разные периоды',
+    hourlyWage: 'Почасовая оплата',
+    hoursPerWeek: 'Часов в неделю',
+    annualSalary: 'Годовая зарплата',
+    yourWageAs: 'Ваша зарплата как:',
+    daily: 'Дневная',
+    monthly: 'Месячная',
+    weekly: 'Недельная',
+    biweekly: 'Раз в две недели',
+    salarySettings: 'Настройки зарплаты',
   },
   ar: {
     selectLanguage: 'اختر اللغة',
@@ -245,6 +323,17 @@ const translations = {
     removeGroup: 'إزالة المجموعة',
     removeSite: 'إزالة الموقع',
     addSite: 'إضافة موقع',
+    wageCalculator: 'حاسبة الراتب',
+    wageCalculatorDescription: 'احسب راتبك لفترات مختلفة',
+    hourlyWage: 'الأجر بالساعة',
+    hoursPerWeek: 'ساعات في الأسبوع',
+    annualSalary: 'الراتب السنوي',
+    yourWageAs: 'راتبك كـ:',
+    daily: 'يومي',
+    monthly: 'شهري',
+    weekly: 'أسبوعي',
+    biweekly: 'كل أسبوعين',
+    salarySettings: 'إعدادات الراتب',
   },
 }
 
@@ -1375,6 +1464,10 @@ function App() {
   const [whitelist, setWhitelist] = useState([])
   const [siteInput, setSiteInput] = useState('')
   const [expandedGroups, setExpandedGroups] = useState(new Set())
+  const [isAddingSite, setIsAddingSite] = useState(false)
+  const [wagePopoverOpen, setWagePopoverOpen] = useState(false)
+  const [hourlyWage, setHourlyWage] = useState('')
+  const [hoursPerWeek, setHoursPerWeek] = useState('40')
 
   const formatNumber = useCallback((value, currencyCode) => {
     if (!value) return ''
@@ -1561,6 +1654,18 @@ function App() {
     updateCurrencyDisplay(currency)
   }, [currency, updateCurrencyDisplay])
 
+  // Update main salary field when monthly wage is calculated from hourly wage
+  useEffect(() => {
+    const hourly = parseFormattedNumber(hourlyWage, currency)
+    const hours = parseFloat(hoursPerWeek) || 0
+    if (hourly > 0 && hours > 0) {
+      // Monthly = hourly * hours per week * (52/12) weeks
+      const monthly = hourly * hours * (52 / 12)
+      const centsValue = Math.round(monthly * 100).toString()
+      setSalary(formatNumber(centsValue, currency))
+    }
+  }, [hourlyWage, hoursPerWeek, currency, formatNumber])
+
   const handleCurrencySelect = (selectedCode) => {
     const value = selectedCode.trim().toUpperCase()
     setCurrency(value === currency ? '' : value)
@@ -1682,15 +1787,31 @@ function App() {
       return
     }
     
+    setIsAddingSite(true)
+    
     const newWhitelist = [...whitelist, normalizedSite]
     setWhitelist(newWhitelist)
     setSiteInput('')
     
     if (typeof chrome !== 'undefined' && chrome.storage) {
       chrome.storage.local.set({ whitelist: newWhitelist }, () => {
-        setStatus({ show: true, message: t('siteAddedToWhitelist', language) })
-        setTimeout(() => setStatus({ show: false, message: '' }), 2000)
+        setIsAddingSite(false)
+        setStatus({ 
+          show: true, 
+          message: `${t('siteAddedToWhitelist', language)}: ${normalizedSite}` 
+        })
+        setTimeout(() => setStatus({ show: false, message: '' }), 3000)
       })
+    } else {
+      // Fallback for non-chrome environments (development)
+      setTimeout(() => {
+        setIsAddingSite(false)
+        setStatus({ 
+          show: true, 
+          message: `${t('siteAddedToWhitelist', language)}: ${normalizedSite}` 
+        })
+        setTimeout(() => setStatus({ show: false, message: '' }), 3000)
+      }, 300)
     }
   }
   
@@ -1809,7 +1930,7 @@ function App() {
         <div className="space-y-2">
           <div className="relative">
             <Label htmlFor="salary" className="sr-only">{t('monthlyNetSalary', language)}</Label>
-            <div className="absolute left-3 top-1 bottom-1 flex items-center text-base md:text-sm pointer-events-none z-10 text-black opacity-50 m-0">
+            <div className="absolute left-3 top-1 bottom-1 flex items-center text-base md:text-sm pointer-events-none z-10 text-muted-foreground m-0">
               {currencyDisplay}
             </div>
             <Input
@@ -1818,9 +1939,171 @@ function App() {
               placeholder="0"
               value={salary}
               onChange={handleSalaryChange}
-              className={`pl-12 ${error.field === 'salary' ? 'border-destructive' : ''}`}
+              className={`pl-12 pr-10 ${error.field === 'salary' ? 'border-destructive' : ''}`}
               inputMode="numeric"
             />
+            <Popover open={wagePopoverOpen} onOpenChange={setWagePopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1 bottom-1 h-auto w-8 text-muted-foreground hover:text-foreground"
+                  aria-label={t('salarySettings', language)}
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-4" align="end">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-sm">{t('wageCalculator', language)}</h4>
+                    <p className="text-xs text-muted-foreground">
+                      {t('wageCalculatorDescription', language)}
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="hourly-wage" className="text-xs">{t('hourlyWage', language)}</Label>
+                      <div className="relative">
+                        <div className="absolute left-3 top-1 bottom-1 flex items-center text-sm pointer-events-none z-10 text-muted-foreground">
+                          {currencyDisplay}
+                        </div>
+                        <Input
+                          id="hourly-wage"
+                          type="text"
+                          placeholder="0"
+                          value={hourlyWage}
+                          onChange={(e) => {
+                            const value = e.target.value
+                            const digitsOnly = value.replace(/\D/g, '')
+                            if (digitsOnly) {
+                              setHourlyWage(formatNumber(digitsOnly, currency))
+                            } else {
+                              setHourlyWage('')
+                            }
+                          }}
+                          className="pl-10 h-8 text-sm"
+                          inputMode="numeric"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="hours-per-week" className="text-xs">{t('hoursPerWeek', language)}</Label>
+                      <Input
+                        id="hours-per-week"
+                        type="number"
+                        placeholder="40"
+                        value={hoursPerWeek}
+                        onChange={(e) => setHoursPerWeek(e.target.value)}
+                        className="h-8 text-sm"
+                        min="1"
+                        max="168"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="annual-salary" className="text-xs">{t('annualSalary', language)}</Label>
+                      <div className="relative">
+                        <div className="absolute left-3 top-1 bottom-1 flex items-center text-sm pointer-events-none z-10 text-muted-foreground">
+                          {currencyDisplay}
+                        </div>
+                        <Input
+                          id="annual-salary"
+                          type="text"
+                          placeholder="0"
+                          value={(() => {
+                            const hourly = parseFormattedNumber(hourlyWage, currency)
+                            const hours = parseFloat(hoursPerWeek) || 0
+                            if (hourly > 0 && hours > 0) {
+                              // Annual = hourly * hours per week * 52 weeks
+                              const annual = hourly * hours * 52
+                              const centsValue = Math.round(annual * 100).toString()
+                              return formatNumber(centsValue, currency)
+                            }
+                            return ''
+                          })()}
+                          readOnly
+                          className="pl-10 h-8 text-sm bg-muted"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 pt-2 border-t">
+                    <h5 className="font-medium text-xs">{t('yourWageAs', language)}</h5>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{t('daily', language)}</Label>
+                        <div className="text-sm font-medium">
+                          {(() => {
+                            const hourly = parseFormattedNumber(hourlyWage, currency)
+                            const hours = parseFloat(hoursPerWeek) || 0
+                            if (hourly > 0 && hours > 0) {
+                              // Daily = hourly * (hours per week / 5 days)
+                              const daily = hourly * (hours / 5)
+                              const centsValue = Math.round(daily * 100).toString()
+                              return `${currencyDisplay} ${formatNumber(centsValue, currency)}`
+                            }
+                            return '-'
+                          })()}
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{t('monthly', language)}</Label>
+                        <div className="text-sm font-medium">
+                          {(() => {
+                            const hourly = parseFormattedNumber(hourlyWage, currency)
+                            const hours = parseFloat(hoursPerWeek) || 0
+                            if (hourly > 0 && hours > 0) {
+                              // Monthly = hourly * hours per week * (52/12 weeks)
+                              const monthly = hourly * hours * (52 / 12)
+                              const centsValue = Math.round(monthly * 100).toString()
+                              return `${currencyDisplay} ${formatNumber(centsValue, currency)}`
+                            }
+                            return '-'
+                          })()}
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{t('weekly', language)}</Label>
+                        <div className="text-sm font-medium">
+                          {(() => {
+                            const hourly = parseFormattedNumber(hourlyWage, currency)
+                            const hours = parseFloat(hoursPerWeek) || 0
+                            if (hourly > 0 && hours > 0) {
+                              // Weekly = hourly * hours per week
+                              const weekly = hourly * hours
+                              const centsValue = Math.round(weekly * 100).toString()
+                              return `${currencyDisplay} ${formatNumber(centsValue, currency)}`
+                            }
+                            return '-'
+                          })()}
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{t('biweekly', language)}</Label>
+                        <div className="text-sm font-medium">
+                          {(() => {
+                            const hourly = parseFormattedNumber(hourlyWage, currency)
+                            const hours = parseFloat(hoursPerWeek) || 0
+                            if (hourly > 0 && hours > 0) {
+                              // Biweekly = hourly * hours per week * 2
+                              const biweekly = hourly * hours * 2
+                              const centsValue = Math.round(biweekly * 100).toString()
+                              return `${currencyDisplay} ${formatNumber(centsValue, currency)}`
+                            }
+                            return '-'
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
           {error.field === 'salary' && (
             <p className="text-sm text-destructive">{error.message}</p>
@@ -1863,8 +2146,17 @@ function App() {
                 }}
                 className="flex-1"
               />
-              <Button onClick={handleAddSite} size="icon" variant="outline">
-                <Plus className="h-4 w-4" />
+              <Button 
+                onClick={handleAddSite} 
+                size="icon" 
+                variant="outline"
+                disabled={isAddingSite || !siteInput.trim()}
+              >
+                {isAddingSite ? (
+                  <Spinner className="h-4 w-4" />
+                ) : (
+                  <Plus className="h-4 w-4" />
+                )}
                 <span className="sr-only">{t('addSite', language)}</span>
               </Button>
             </div>
