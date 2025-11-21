@@ -47,6 +47,31 @@ const languages = [
 // US Federal minimum wage: $7.25/hour * 40 hours/week * 4.33 weeks/month = $1,256.67/month
 const US_MONTHLY_MINIMUM_WAGE = 1256.67
 
+// Default whitelist sites for the extension
+const DEFAULT_WHITELIST = [
+  'google.com',
+  'amazon.com',
+  'amazon.co.uk',
+  'amazon.de',
+  'amazon.fr',
+  'amazon.it',
+  'amazon.es',
+  'amazon.ca',
+  'amazon.com.au',
+  'amazon.co.jp',
+  'ebay.com',
+  'ebay.co.uk',
+  'ebay.de',
+  'walmart.com',
+  'target.com',
+  'bestbuy.com',
+  'costco.com',
+  'alibaba.com',
+  'shopify.com',
+  'etsy.com',
+  'aliexpress.com'
+]
+
 function App() {
   const [salary, setSalary] = useState('')
   const [currency, setCurrency] = useState('USD')
@@ -194,8 +219,13 @@ function App() {
           setLanguage(data.userLanguage)
         }
         
-        if (data.whitelist && Array.isArray(data.whitelist)) {
+        if (data.whitelist && Array.isArray(data.whitelist) && data.whitelist.length > 0) {
           setWhitelist(data.whitelist)
+        } else {
+          // Use default whitelist if none is saved
+          setWhitelist(DEFAULT_WHITELIST)
+          // Save defaults to storage
+          chrome.storage.local.set({ whitelist: DEFAULT_WHITELIST })
         }
       })
     } else {
@@ -205,6 +235,8 @@ function App() {
       // Convert to cents for formatting
       const centsValue = Math.round(US_MONTHLY_MINIMUM_WAGE * 100).toString()
       setSalary(formatNumber(centsValue, 'USD'))
+      // Set default whitelist for development
+      setWhitelist(DEFAULT_WHITELIST)
     }
   }, [formatNumber, updateCurrencyDisplay])
 
