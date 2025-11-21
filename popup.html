@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Time Cost Settings</title>
+  <style>
+    /* shadcn design system - inline styles for browser extension CSP compliance */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    }
+    
+    :root {
+      --background: 0 0% 100%;
+      --foreground: 222.2 84% 4.9%;
+      --card: 0 0% 100%;
+      --card-foreground: 222.2 84% 4.9%;
+      --primary: 222.2 47.4% 11.2%;
+      --primary-foreground: 210 40% 98%;
+      --muted-foreground: 215.4 16.3% 46.9%;
+      --destructive: 0 84.2% 60.2%;
+      --border: 214.3 31.8% 91.4%;
+      --input: 214.3 31.8% 91.4%;
+      --ring: 222.2 84% 4.9%;
+      --radius: 0.5rem;
+      --success: 142.1 70.6% 45.3%;
+    }
+    
+    body {
+      width: 320px;
+      min-height: 400px;
+      background: linear-gradient(to bottom right, hsl(210 40% 98%), hsl(210 40% 96.1%));
+      color: hsl(var(--foreground));
+      padding: 24px;
+    }
+    
+    .card {
+      border-radius: calc(var(--radius) + 4px);
+      border: 1px solid hsl(var(--border));
+      background-color: hsl(var(--card));
+      color: hsl(var(--card-foreground));
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .form-group {
+      margin-bottom: 0;
+    }
+    
+    .currency-selector-group {
+      width: 100%;
+    }
+    
+    .currency-display-group {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+    
+    .currency-display-box {
+      flex: 0 0 auto;
+      min-width: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 2.5rem;
+      border-radius: calc(var(--radius) - 2px);
+      border: 1px solid hsl(var(--input));
+      background-color: hsl(var(--background));
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: hsl(var(--foreground));
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+    
+    .salary-input-group {
+      flex: 1;
+    }
+    
+    .label {
+      display: none;
+    }
+    
+    .input {
+      display: flex;
+      height: 2.5rem;
+      width: 100%;
+      border-radius: calc(var(--radius) - 2px);
+      border: 1px solid hsl(var(--input));
+      background-color: hsl(var(--background));
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      outline: none;
+    }
+    
+    .input:focus {
+      outline: 2px solid transparent;
+      outline-offset: 2px;
+      border-color: hsl(var(--ring));
+      box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+    }
+    
+    .input::placeholder {
+      color: hsl(var(--muted-foreground));
+    }
+    
+    .input.error {
+      border-color: hsl(var(--destructive));
+    }
+    
+    .select {
+      display: flex;
+      height: 2.5rem;
+      width: 100%;
+      border-radius: calc(var(--radius) - 2px);
+      border: 1px solid hsl(var(--input));
+      background-color: hsl(var(--background));
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      padding-right: 2.5rem;
+      text-align: left;
+    }
+    
+    .select option:first-child {
+      color: hsl(var(--muted-foreground));
+    }
+    
+    .select:focus {
+      outline: 2px solid transparent;
+      outline-offset: 2px;
+      border-color: hsl(var(--ring));
+      box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: calc(var(--radius) - 2px);
+      font-size: 0.875rem;
+      font-weight: 500;
+      height: 2.5rem;
+      padding: 0.5rem 1rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      width: 100%;
+    }
+    
+    .btn-primary {
+      background-color: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      text-transform: lowercase;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      background-color: hsl(222.2 47.4% 11.2% / 0.9);
+    }
+    
+    .btn-primary:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+    
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .success {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      border-radius: calc(var(--radius) - 2px);
+      background-color: hsl(142.1 76.2% 36.3% / 0.1);
+      color: hsl(var(--success));
+      font-size: 0.875rem;
+      margin-top: 16px;
+      animation: slideIn 0.2s ease-out;
+    }
+    
+    .success.hidden {
+      display: none;
+    }
+    
+    .success svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <!-- Top: Currency Selector -->
+    <div class="form-group currency-selector-group">
+      <label for="currency" class="label">Choose a currency</label>
+      <select id="currency" class="select">
+        <option value="" disabled selected>Choose a currency</option>
+        <option value="USD">USD ($)</option>
+        <option value="EUR">EUR (€)</option>
+        <option value="BRL">BRL (R$)</option>
+      </select>
+    </div>
+
+    <!-- Middle: Currency Display + Salary Input (side by side) -->
+    <div class="currency-display-group">
+      <div class="currency-display-box" id="currencyDisplay">
+        -
+      </div>
+      <div class="form-group salary-input-group">
+        <label for="salary" class="label">Monthly Net Salary</label>
+        <input 
+          type="text" 
+          id="salary" 
+          class="input" 
+          placeholder="0"
+          inputmode="numeric"
+        >
+      </div>
+    </div>
+
+    <!-- Bottom: Save Button -->
+    <button id="saveBtn" class="btn btn-primary">
+      save & apply
+    </button>
+    
+    <div id="status" class="success hidden">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      <span>Settings saved! Refresh page to see changes.</span>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
+
