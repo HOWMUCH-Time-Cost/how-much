@@ -388,7 +388,7 @@ function App() {
 
           <div className="space-y-2 relative">
             <Label htmlFor="salary" className="sr-only">Monthly Net Salary</Label>
-            <div className="absolute left-3 top-1 bottom-1 flex items-center text-base md:text-sm pointer-events-none z-10 text-black opacity-50">
+            <div className="absolute left-3 top-1 bottom-1 flex items-center text-base md:text-sm pointer-events-none z-10 text-black opacity-50 m-0">
               {currencyDisplay}
             </div>
             <Input
