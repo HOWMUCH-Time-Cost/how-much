@@ -302,11 +302,11 @@ function App() {
                   )}
                 >
                   {selectedCurrency ? (
-                    <span>{selectedCurrency.displayText}</span>
+                    <span className="truncate text-left flex-1 min-w-0 mr-2">{selectedCurrency.displayText}</span>
                   ) : (
-                    <span className="text-muted-foreground">Search or select currency...</span>
+                    <span className="text-muted-foreground truncate text-left flex-1 min-w-0 mr-2">Search or select currency...</span>
                   )}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent 
