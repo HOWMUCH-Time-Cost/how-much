@@ -302,7 +302,7 @@ function App() {
                   )}
                 >
                   {selectedCurrency ? (
-                    <span className="flex-1">{selectedCurrency.displayText}</span>
+                    <span className="flex-1 truncate">{selectedCurrency.displayText}</span>
                   ) : (
                     <span className="text-muted-foreground flex-1 w-full">Search or select currency...</span>
                   )}
