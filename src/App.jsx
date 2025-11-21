@@ -702,6 +702,7 @@ function App() {
                 variant="outline"
                 role="combobox"
                 aria-expanded={open}
+                aria-label={selectedCurrency ? `${t('chooseCurrency', language)}: ${selectedCurrency.displayText}` : t('chooseCurrency', language)}
                 className={cn(
                   "w-full justify-between",
                   error.field === 'currency' && 'border-destructive'
@@ -715,12 +716,12 @@ function App() {
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[320px] p-0" align="start">
+            <PopoverContent className="w-[320px] p-0" align="start" aria-label={t('chooseCurrency', language)}>
               <Command>
-                <CommandInput placeholder={t('searchCurrency', language)} className="h-9" />
-                <CommandList>
+                <CommandInput placeholder={t('searchCurrency', language)} className="h-9" aria-label={t('searchCurrency', language)} />
+                <CommandList aria-label={t('chooseCurrency', language)}>
                   <CommandEmpty>{t('noCurrencyFound', language)}</CommandEmpty>
-                  <CommandGroup>
+                  <CommandGroup aria-label={t('chooseCurrency', language)}>
                     {currencies.map((curr) => (
                       <CommandItem
                         key={curr.code}
