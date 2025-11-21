@@ -309,10 +309,10 @@ function App() {
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[320px] p-0" align="start">
-                <Command>
-                  <CommandInput placeholder="Search currency..." className="h-9" />
-                  <CommandList>
+              <PopoverContent className="fixed inset-0 w-screen h-screen rounded-none p-4 md:p-6" align="start">
+                <Command className="h-full flex flex-col">
+                  <CommandInput placeholder="Search currency..." className="h-12 text-base" />
+                  <CommandList className="flex-1 mt-2">
                     <CommandEmpty>No currency found.</CommandEmpty>
                     <CommandGroup>
                       {currencies.map((curr) => (
@@ -320,10 +320,11 @@ function App() {
                           key={curr.code}
                           value={`${curr.code} ${curr.country} ${curr.symbol}`}
                           onSelect={() => handleCurrencySelect(curr.code)}
+                          className="py-3 text-base"
                         >
                           <Check
                             className={cn(
-                              "mr-2 h-4 w-4",
+                              "mr-2 h-5 w-5",
                               currency === curr.code ? "opacity-100" : "opacity-0"
                             )}
                           />
