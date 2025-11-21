@@ -34,3 +34,37 @@ Additional project-specific rules are organized in separate files in `.cursor/ru
 - Before pushing, review `.changes-log.md` to organize and split commits properly
 - Update `.changes-log.md` immediately after making any changes
 
+## React Extension UI Build Process
+
+The extension popup UI is built with React and must be rebuilt when React source files change.
+
+### Keeping the Extension UI Updated
+
+- **When to rebuild**: After making any changes to files in `src/` directory (especially `src/App.jsx`, `src/main.jsx`, or any components)
+- **Build command**: Run `npm run build` to rebuild the extension
+- **Build output**: The build process generates:
+  - `popup.js` - Bundled React application
+  - `popup.css` - Compiled Tailwind CSS styles
+  - `popup.html` - Updated HTML with correct script references
+
+### Build Process
+
+1. `popup.html` should reference the React entry point: `<script type="module" src="/src/main.jsx"></script>`
+2. Run `npm run build` - Vite will:
+   - Bundle the React app from `src/main.jsx`
+   - Compile Tailwind CSS
+   - Update `popup.html` with references to the built files (`./popup.js` and `./popup.css`)
+   - Output all files to the root directory (for extension compatibility)
+
+### After Building
+
+- Always reload the extension in the browser to see changes:
+  1. Open `chrome://extensions/` or `edge://extensions/`
+  2. Find the extension and click the reload button
+
+### Important Notes
+
+- **Don't edit `popup.js` directly** - it's a generated file and will be overwritten on build
+- **Don't manually edit built files** - always make changes to source files in `src/` and rebuild
+- The `popup.html` file gets automatically updated during build, but it starts with a reference to `/src/main.jsx`
+
