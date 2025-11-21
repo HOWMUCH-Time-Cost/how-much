@@ -61,66 +61,33 @@ function App() {
     if (!value) return ''
     
     const info = getCurrencyInfo(currencyCode)
-    let cleanValue = value.toString().replace(/[^\d.,]/g, '')
+    // Remove all non-digit characters to get pure digits
+    let cleanValue = value.toString().replace(/\D/g, '')
     
-    // Parse the number based on currency format
-    let num
-    let hasDecimal = false
+    if (!cleanValue) return ''
     
-    if (info.decimal === ',' && info.separator === '.') {
-      // Brazilian/European format: dots are thousands, comma is decimal
-      if (cleanValue.includes(',')) {
-        // Has decimal separator (comma)
-        hasDecimal = true
-        cleanValue = cleanValue.replace(/\./g, '').replace(',', '.')
-      } else if (cleanValue.includes('.')) {
-        // Only dots: check if it's a decimal or thousands
-        const parts = cleanValue.split('.')
-        const lastPart = parts[parts.length - 1]
-        if (parts.length === 2 && lastPart.length <= 2) {
-          // Likely a decimal (e.g., "123.45")
-          hasDecimal = true
-        } else {
-          // Thousands separators
-          cleanValue = cleanValue.replace(/\./g, '')
-        }
-      } else {
-        // No separators, just digits
-        cleanValue = cleanValue
-      }
-      num = parseFloat(cleanValue)
-    } else {
-      // USD format: commas are thousands, dot is decimal
-      if (cleanValue.includes('.')) {
-        // Has decimal separator (dot)
-        hasDecimal = true
-        cleanValue = cleanValue.replace(/,/g, '')
-      } else {
-        // No decimal, remove thousands separators
-        cleanValue = cleanValue.replace(/,/g, '')
-      }
-      num = parseFloat(cleanValue)
-    }
+    // Base masking: treat input as cents (smallest unit), divide by 100
+    // e.g., "123456" -> 1234.56
+    const num = parseFloat(cleanValue) / 100
     
     if (isNaN(num)) return ''
     
-    // Format with decimals if the original input had decimals
-    const decimalPlaces = hasDecimal && num % 1 !== 0 ? 2 : 0
+    // Always format with 2 decimal places (since input is in cents)
     try {
       return num.toLocaleString(info.locale, { 
-        minimumFractionDigits: decimalPlaces, 
-        maximumFractionDigits: decimalPlaces 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2 
       })
     } catch (e) {
       if (info.decimal === ',' && info.separator === '.') {
         return num.toLocaleString('pt-BR', { 
-          minimumFractionDigits: decimalPlaces, 
-          maximumFractionDigits: decimalPlaces 
+          minimumFractionDigits: 2, 
+          maximumFractionDigits: 2 
         })
       } else {
         return num.toLocaleString('en-US', { 
-          minimumFractionDigits: decimalPlaces, 
-          maximumFractionDigits: decimalPlaces 
+          minimumFractionDigits: 2, 
+          maximumFractionDigits: 2 
         })
       }
     }
@@ -128,19 +95,14 @@ function App() {
 
   const parseFormattedNumber = useCallback((value, currencyCode) => {
     if (!value) return 0
-    let cleanValue = value.toString().replace(/[^\d.,]/g, '')
+    // Remove all non-digit characters to get pure digits (cents)
+    let cleanValue = value.toString().replace(/\D/g, '')
     
-    const info = getCurrencyInfo(currencyCode)
+    if (!cleanValue) return 0
     
-    if (info.decimal === ',' && info.separator === '.') {
-      cleanValue = cleanValue.replace(/\./g, '').replace(',', '.')
-    } else if (info.separator === ' ') {
-      cleanValue = cleanValue.replace(/\s/g, '').replace(',', '.')
-    } else {
-      cleanValue = cleanValue.replace(/,/g, '')
-    }
-    
-    return parseFloat(cleanValue) || 0
+    // Base masking: input is in cents, divide by 100 to get the actual value
+    // e.g., "123456" -> 1234.56
+    return parseFloat(cleanValue) / 100 || 0
   }, [])
 
   const fetchCurrencies = useCallback(async () => {
@@ -215,10 +177,15 @@ function App() {
         
         // Set default salary to US monthly minimum wage if not saved
         if (data.userSalary) {
-          setSalary(formatNumber(data.userSalary.toString(), data.userCurrency || 'USD'))
+          // Convert saved value (dollars) to cents for formatting
+          // formatNumber expects digits (cents) and divides by 100
+          const centsValue = Math.round(data.userSalary * 100).toString()
+          setSalary(formatNumber(centsValue, data.userCurrency || 'USD'))
         } else {
           // Default to US monthly minimum wage
-          setSalary(formatNumber(US_MONTHLY_MINIMUM_WAGE.toString(), data.userCurrency || 'USD'))
+          // Convert to cents for formatting
+          const centsValue = Math.round(US_MONTHLY_MINIMUM_WAGE * 100).toString()
+          setSalary(formatNumber(centsValue, data.userCurrency || 'USD'))
         }
         
         if (data.userLanguage) {
@@ -229,7 +196,9 @@ function App() {
       // Fallback when chrome.storage is not available (e.g., in development)
       setCurrency('USD')
       updateCurrencyDisplay('USD')
-      setSalary(formatNumber(US_MONTHLY_MINIMUM_WAGE.toString(), 'USD'))
+      // Convert to cents for formatting
+      const centsValue = Math.round(US_MONTHLY_MINIMUM_WAGE * 100).toString()
+      setSalary(formatNumber(centsValue, 'USD'))
     }
   }, [formatNumber, updateCurrencyDisplay])
 
@@ -254,33 +223,26 @@ function App() {
     setError({ field: null, message: '' })
     
     if (salary && value && currencyInfo[value]) {
+      // Get the current value in dollars, convert to cents for formatting
       const numValue = parseFormattedNumber(salary, value)
-      setSalary(formatNumber(numValue.toString(), value))
+      const centsValue = Math.round(numValue * 100).toString()
+      setSalary(formatNumber(centsValue, value))
     }
   }
 
   const handleSalaryChange = (e) => {
     const value = e.target.value
     const currentCurrency = currency || 'USD'
-    const info = getCurrencyInfo(currentCurrency)
     
-    // Allow user to type freely, including decimal separator
+    // Base masking: treat all input as digits (cents), format by dividing by 100
+    // User types digits only, we format with decimal places
     if (currentCurrency && currencyInfo[currentCurrency] && value) {
-      // Check if the value ends with a decimal separator (user might be typing decimals)
-      const endsWithDecimal = value.endsWith(info.decimal)
-      
-      if (endsWithDecimal) {
-        // User is typing a decimal, don't format yet - let them finish
-        setSalary(value)
+      // Remove all non-digits and format
+      const digitsOnly = value.replace(/\D/g, '')
+      if (digitsOnly) {
+        setSalary(formatNumber(digitsOnly, currentCurrency))
       } else {
-        // Parse and format the number
-        const numValue = parseFormattedNumber(value, currentCurrency)
-        if (!isNaN(numValue) && numValue >= 0) {
-          // Use the original value for formatting to preserve decimal input
-          setSalary(formatNumber(value, currentCurrency))
-        } else {
-          setSalary(value)
-        }
+        setSalary('')
       }
     } else {
       setSalary(value)
@@ -426,7 +388,7 @@ function App() {
 
           <div className="space-y-2 relative">
             <Label htmlFor="salary" className="sr-only">Monthly Net Salary</Label>
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-base md:text-sm pointer-events-none z-10 text-black opacity-50 leading-[1.5]">
+            <div className="absolute left-3 top-0 h-9 flex items-center text-base md:text-sm pointer-events-none z-10 text-black opacity-50">
               {currencyDisplay}
             </div>
             <Input
