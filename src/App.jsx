@@ -44,9 +44,12 @@ const languages = [
   { code: 'zh', name: '中文', flag: '🇨🇳' },
 ]
 
+// US Federal minimum wage: $7.25/hour * 40 hours/week * 4.33 weeks/month = $1,256.67/month
+const US_MONTHLY_MINIMUM_WAGE = 1256.67
+
 function App() {
   const [salary, setSalary] = useState('')
-  const [currency, setCurrency] = useState('')
+  const [currency, setCurrency] = useState('USD')
   const [currencies, setCurrencies] = useState([])
   const [currencyDisplay, setCurrencyDisplay] = useState('-')
   const [status, setStatus] = useState({ show: false, message: '' })
@@ -152,17 +155,33 @@ function App() {
   const loadSavedSettings = useCallback(() => {
     if (typeof chrome !== 'undefined' && chrome.storage) {
       chrome.storage.local.get(['userSalary', 'userCurrency', 'userLanguage'], (data) => {
+        // Set default currency to USD if not saved
         if (data.userCurrency && currencyInfo[data.userCurrency]) {
           setCurrency(data.userCurrency)
           updateCurrencyDisplay(data.userCurrency)
+        } else {
+          // Default to USD
+          setCurrency('USD')
+          updateCurrencyDisplay('USD')
         }
+        
+        // Set default salary to US monthly minimum wage if not saved
         if (data.userSalary) {
           setSalary(formatNumber(data.userSalary.toString(), data.userCurrency || 'USD'))
+        } else {
+          // Default to US monthly minimum wage
+          setSalary(formatNumber(US_MONTHLY_MINIMUM_WAGE.toString(), data.userCurrency || 'USD'))
         }
+        
         if (data.userLanguage) {
           setLanguage(data.userLanguage)
         }
       })
+    } else {
+      // Fallback when chrome.storage is not available (e.g., in development)
+      setCurrency('USD')
+      updateCurrencyDisplay('USD')
+      setSalary(formatNumber(US_MONTHLY_MINIMUM_WAGE.toString(), 'USD'))
     }
   }, [formatNumber, updateCurrencyDisplay])
 

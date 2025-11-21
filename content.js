@@ -16,7 +16,10 @@ const CURRENCY_CONFIG = {
 // Matches: $100, $100.00, 100 USD, €100, 100 €, R$ 1.000,00
 const PRICE_REGEX = /((R\$|€|\$)\s?(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?))|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?\s?(USD|EUR|BRL))/gi;
 
-let userSalary = 0;
+// US Federal minimum wage: $7.25/hour * 40 hours/week * 4.33 weeks/month = $1,256.67/month
+const US_MONTHLY_MINIMUM_WAGE = 1256.67;
+
+let userSalary = US_MONTHLY_MINIMUM_WAGE;
 let userCurrency = 'USD';
 
 // Main entry point
@@ -24,8 +27,12 @@ chrome.storage.local.get(['userSalary', 'userCurrency'], (data) => {
   if (data.userSalary && data.userCurrency) {
     userSalary = parseFloat(data.userSalary);
     userCurrency = data.userCurrency;
-    init();
+  } else {
+    // Set defaults if no saved settings
+    userSalary = US_MONTHLY_MINIMUM_WAGE;
+    userCurrency = 'USD';
   }
+  init();
 });
 
 function init() {
