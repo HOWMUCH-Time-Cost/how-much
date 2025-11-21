@@ -1,0 +1,24 @@
+# Cursor Rules for how-much project
+
+## Git Commit Behavior
+- On every code change, automatically commit to the current branch
+- **Exception**: Do NOT auto-commit if the current branch is `main` or `master`
+- Use descriptive commit messages that explain what was changed
+- Commit messages should be in present tense (e.g., "Add feature X" not "Added feature X")
+
+## Commit Message Format
+- Start with a verb: Add, Fix, Update, Refactor, Remove, etc.
+- Be concise but descriptive
+- Include relevant context when helpful
+
+## Examples
+- "Add currency formatting for BRL locale"
+- "Fix number parsing for European format"
+- "Update popup UI with shadcn components"
+- "Refactor content script for better performance"
+
+## When NOT to commit
+- When on `main` branch (requires manual review)
+- When only documentation changes (unless explicitly requested)
+- When changes are incomplete or broken
+
