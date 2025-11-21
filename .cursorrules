@@ -28,3 +28,9 @@ Additional project-specific rules are organized in separate files in `.cursor/ru
 - **Design System**: See `.cursor/rules/design-system.mdc` for shadcn/ui design system guidelines
 - **Currency Punctuation**: See `.cursor/rules/currency-punctuation.mdc` for detailed rules on handling different number formats when parsing prices
 
+## Change Tracking
+
+- **Changes Log**: See `.changes-log.md` to track all changes with commit information
+- Before pushing, review `.changes-log.md` to organize and split commits properly
+- Update `.changes-log.md` immediately after making any changes
+
