@@ -326,8 +326,8 @@ function App() {
                 }}
               >
                 <Command className="h-full flex flex-col">
-                  <div className="p-4 border-b sticky top-0 bg-background z-10">
-                    <CommandInput placeholder="Search currency..." className="h-12 text-base" />
+                  <div className="sticky top-0 bg-background z-10 border-b">
+                    <CommandInput placeholder="Search currency..." className="h-12 text-base border-0" />
                   </div>
                   <CommandList className="flex-1 overflow-y-auto">
                     <CommandEmpty className="py-8">No currency found.</CommandEmpty>
@@ -360,16 +360,21 @@ function App() {
 
           <div className="space-y-2 relative">
             <Label htmlFor="salary" className="sr-only">Monthly Net Salary</Label>
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-xl pointer-events-none z-10">
-              {currencyDisplay}
-            </div>
+            {currencyDisplay !== '-' && (
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-xl pointer-events-none z-10">
+                {currencyDisplay}
+              </div>
+            )}
             <Input
               id="salary"
               type="text"
               placeholder="0"
               value={salary}
               onChange={handleSalaryChange}
-              className={`pl-12 ${error.field === 'salary' ? 'border-destructive' : ''}`}
+              className={cn(
+                currencyDisplay !== '-' ? 'pl-12' : '',
+                error.field === 'salary' && 'border-destructive'
+              )}
               inputMode="numeric"
             />
             {error.field === 'salary' && (
