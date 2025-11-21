@@ -655,9 +655,9 @@ function App() {
       <div className="absolute top-6 right-6">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 gap-2">
-              <span>{selectedLanguage.flag}</span>
-              <span className="text-sm">{selectedLanguage.name}</span>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <span className="text-lg">{selectedLanguage.flag}</span>
+              <span className="sr-only">Select language</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
