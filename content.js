@@ -386,8 +386,8 @@ function processNode(textNode) {
       margin-left: 4px;
       padding: 2px 6px;
       border-radius: 100px;
-      background-color: rgba(170, 170, 170, 0.16);
-      color: #dafaa2;
+      background-color: #dafaa2;
+      color: #000;
       font-size: 16px;
       font-family: 'Boldonse', sans-serif;
       font-weight: 700;
