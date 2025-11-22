@@ -1,0 +1,11 @@
+{
+  "extName": {
+    "message": "HOWMUCH? Time Cost",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "Преобразует цены на продукты в количество рабочих дней на основе вашей месячной зарплаты.",
+    "description": "Extension description"
+  }
+}
+

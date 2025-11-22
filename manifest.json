@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Time Cost: How many days does this cost?",
+  "name": "__MSG_extName__",
   "version": "1.1",
-  "description": "Converts product prices into number of work days based on your monthly salary.",
+  "description": "__MSG_extDescription__",
+  "default_locale": "en",
   "permissions": ["storage", "tabs"],
   "host_permissions": ["https://v6.exchangerate-api.com/*", "https://www.google.com/*"],
   "action": {

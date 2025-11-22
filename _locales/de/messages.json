@@ -1,0 +1,11 @@
+{
+  "extName": {
+    "message": "HOWMUCH? Time Cost",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "Wandelt Produktpreise in die Anzahl der Arbeitstage basierend auf Ihrem monatlichen Gehalt um.",
+    "description": "Extension description"
+  }
+}
+

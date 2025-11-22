@@ -1,0 +1,11 @@
+{
+  "extName": {
+    "message": "HOWMUCH? Time Cost",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "月給に基づいて商品価格を労働日数に変換します。",
+    "description": "Extension description"
+  }
+}
+

@@ -1,0 +1,11 @@
+{
+  "extName": {
+    "message": "HOWMUCH? Time Cost",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "Convierte los precios de productos en número de días de trabajo según tu salario mensual.",
+    "description": "Extension description"
+  }
+}
+

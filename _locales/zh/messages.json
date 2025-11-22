@@ -1,0 +1,11 @@
+{
+  "extName": {
+    "message": "HOWMUCH? Time Cost",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "根据您的月薪将产品价格转换为工作天数。",
+    "description": "Extension description"
+  }
+}
+

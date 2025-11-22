@@ -1,0 +1,11 @@
+{
+  "extName": {
+    "message": "HOWMUCH? Time Cost",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "يحول أسعار المنتجات إلى عدد أيام العمل بناءً على راتبك الشهري.",
+    "description": "Extension description"
+  }
+}
+
