@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Spinner } from '@/components/ui/spinner'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   Command,
   CommandEmpty,
@@ -1468,6 +1469,7 @@ function App() {
   const [wagePopoverOpen, setWagePopoverOpen] = useState(false)
   const [hourlyWage, setHourlyWage] = useState('')
   const [hoursPerWeek, setHoursPerWeek] = useState('40')
+  const [spacingMode, setSpacingMode] = useState('default')
 
   const formatNumber = useCallback((value, currencyCode) => {
     if (!value) return ''
@@ -1874,6 +1876,22 @@ function App() {
         </TabsList>
         
         <TabsContent value="home" className="space-y-4">
+        <div className="space-y-2">
+          <RadioGroup value={spacingMode} onValueChange={setSpacingMode} className="flex gap-6">
+            <div className="flex items-center gap-3">
+              <RadioGroupItem value="default" id="r1" />
+              <Label htmlFor="r1">Default</Label>
+            </div>
+            <div className="flex items-center gap-3">
+              <RadioGroupItem value="comfortable" id="r2" />
+              <Label htmlFor="r2">Comfortable</Label>
+            </div>
+            <div className="flex items-center gap-3">
+              <RadioGroupItem value="compact" id="r3" />
+              <Label htmlFor="r3">Compact</Label>
+            </div>
+          </RadioGroup>
+        </div>
         <div className="space-y-2">
           <Label htmlFor="currency" className="sr-only">{t('chooseCurrency', language)}</Label>
           <Popover open={open} onOpenChange={setOpen}>
