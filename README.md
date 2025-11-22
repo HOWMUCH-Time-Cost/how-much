@@ -1,4 +1,4 @@
-# Time Cost: How many days does this cost?
+# HOWMUCH? Time Cost
 
 A Chrome/Edge browser extension that converts product prices into the number of work days based on your monthly salary. This helps you understand the real "time cost" of purchases by showing how many days of work each item costs.
 
@@ -6,7 +6,7 @@ A Chrome/Edge browser extension that converts product prices into the number of 
 
 ## 📖 What It Does
 
-**Time Cost** automatically detects prices on web pages and converts them into work days based on your salary. Instead of seeing "$100", you'll see "$100 (2.5 days)" - helping you make more informed purchasing decisions by understanding the real time investment behind each purchase.
+**HOWMUCH? Time Cost** automatically detects prices on web pages and converts them into work days based on your salary. Instead of seeing "$100", you'll see "$100 (2.5 days)" - helping you make more informed purchasing decisions by understanding the real time investment behind each purchase.
 
 ### Core Features
 
