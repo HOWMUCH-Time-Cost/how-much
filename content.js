@@ -227,10 +227,10 @@ function showHoverTooltip(event) {
   tooltip.setAttribute('data-timecost-tooltip', 'true');
   tooltip.innerHTML = `
     <div style="padding: 12px;">
-      <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px; color: hsl(var(--foreground, 0 0% 9.8%));">
+      <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px; color: #000;">
         ${originalPrice}
       </div>
-      <div style="font-size: 12px; color: hsl(var(--muted-foreground, 0 0% 45.1%)); margin-bottom: 8px;">
+      <div style="font-size: 12px; color: #000; margin-bottom: 8px;">
         Time cost
       </div>
       <div style="
@@ -255,8 +255,8 @@ function showHoverTooltip(event) {
     z-index: 999999;
     width: 280px;
     border-radius: 8px;
-    border: 1px solid hsl(var(--border, 214.3 31.8% 91.4%));
-    background-color: hsl(var(--popover, 0 0% 100%));
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background-color: #dafaa2;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     pointer-events: none;
     opacity: 0;
