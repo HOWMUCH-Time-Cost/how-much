@@ -135,6 +135,9 @@ chrome.storage.local.get(['userSalary', 'userCurrency', 'whitelist'], (data) => 
 });
 
 function init() {
+  // Load Google Font (Boldonse)
+  loadGoogleFont('Boldonse', '700');
+  
   // Run immediately
   scanAndConvert(document.body);
 
@@ -149,6 +152,17 @@ function init() {
     });
   });
   observer.observe(document.body, { childList: true, subtree: true });
+}
+
+function loadGoogleFont(fontFamily, fontWeight) {
+  // Check if font is already loaded
+  if (document.getElementById('timecost-google-font')) return;
+  
+  const link = document.createElement('link');
+  link.id = 'timecost-google-font';
+  link.rel = 'stylesheet';
+  link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, '+')}:wght@${fontWeight}&display=swap`;
+  document.head.appendChild(link);
 }
 
 function scanAndConvert(rootNode) {
@@ -371,12 +385,12 @@ function processNode(textNode) {
       display: inline-block;
       margin-left: 4px;
       padding: 2px 6px;
-      border: 1px solid #4a5568;
-      border-radius: 4px;
-      background-color: #2d3748;
-      color: #68d391;
-      font-size: 0.9em;
-      font-weight: 500;
+      border-radius: 100px;
+      background-color: rgba(170, 170, 170, 0.16);
+      color: #dafaa2;
+      font-size: 16px;
+      font-family: 'Boldonse', sans-serif;
+      font-weight: 700;
       line-height: 1.2;
     `;
     fragment.appendChild(timeCostSpan);
