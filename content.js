@@ -291,73 +291,44 @@ function scanOLXPriceElements(rootNode) {
       
       // Check if text contains a price
       if (text && text.trim() && new RegExp(PRICE_REGEX).test(text)) {
-        // Mark as processed
+        // Mark as processed BEFORE processing to prevent duplicates
         processedOLXElements.add(element);
         
-        // First, try to find text nodes within this element
+        // Mark all text nodes in this element as processed to prevent general scan from processing them
         const walker = document.createTreeWalker(
           element,
           NodeFilter.SHOW_TEXT,
-          {
-            acceptNode: function(node) {
-              // Only process text nodes that aren't already processed
-              if (processedTextNodes.has(node)) {
-                return NodeFilter.FILTER_REJECT;
-              }
-              if (isInsideProcessedElement(node)) {
-                return NodeFilter.FILTER_REJECT;
-              }
-              // Skip if text node is inside a strikethrough element
-              if (isStrikethrough(node.parentElement)) {
-                return NodeFilter.FILTER_REJECT;
-              }
-              // Skip if text node is inside an old price element
-              if (isOldPriceElement(node.parentElement)) {
-                return NodeFilter.FILTER_REJECT;
-              }
-              return NodeFilter.FILTER_ACCEPT;
-            }
-          },
+          null,
           false
         );
         
-        let foundPriceNode = false;
         let textNode;
+        const textNodesToProcess = [];
         while (textNode = walker.nextNode()) {
+          // Skip if already processed
+          if (processedTextNodes.has(textNode)) continue;
+          
+          // Skip if inside an element we created
+          if (isInsideProcessedElement(textNode)) continue;
+          
+          // Skip if text node is inside a strikethrough element
+          if (isStrikethrough(textNode.parentElement)) continue;
+          
+          // Skip if text node is inside an old price element
+          if (isOldPriceElement(textNode.parentElement)) continue;
+          
           const nodeText = textNode.nodeValue;
           if (nodeText && nodeText.trim() && new RegExp(PRICE_REGEX).test(nodeText)) {
+            // Mark as processed immediately to prevent duplicates
             processedTextNodes.add(textNode);
-            processNode(textNode);
-            foundPriceNode = true;
+            textNodesToProcess.push(textNode);
           }
         }
         
-        // If no text node was found with a price, but the element itself contains a price,
-        // create a text node from the element's text content and process it
-        if (!foundPriceNode && text && text.trim()) {
-          // Check if element has direct text content (not just in child nodes)
-          const directText = Array.from(element.childNodes)
-            .filter(node => node.nodeType === Node.TEXT_NODE)
-            .map(node => node.textContent)
-            .join('')
-            .trim();
-          
-          if (directText && new RegExp(PRICE_REGEX).test(directText)) {
-            // Find or create a text node to process
-            const firstTextNode = Array.from(element.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
-            if (firstTextNode && !processedTextNodes.has(firstTextNode)) {
-              processedTextNodes.add(firstTextNode);
-              processNode(firstTextNode);
-            } else if (element.firstChild && element.firstChild.nodeType === Node.TEXT_NODE) {
-              // Use the first text node if available
-              const textNode = element.firstChild;
-              if (!processedTextNodes.has(textNode)) {
-                processedTextNodes.add(textNode);
-                processNode(textNode);
-              }
-            }
-          }
-        }
+        // Process all collected text nodes
+        textNodesToProcess.forEach(node => {
+          processNode(node);
+        });
       }
     });
   });
