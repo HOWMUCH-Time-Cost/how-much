@@ -729,7 +729,6 @@ function processNode(textNode) {
       `;
       priceContainer.appendChild(timeCostSpan);
       fragment.appendChild(priceContainer);
-      fragment.appendChild(timeCostSpan);
     }
     
     lastIndex = matchData.index + matchData.length;
