@@ -334,6 +334,18 @@ function scanOLXPriceElements(rootNode) {
   });
 }
 
+function isInsideProcessedOLXElement(node) {
+  // Check if node is inside a processed OLX element
+  let current = node.parentElement;
+  while (current && current !== document.body) {
+    if (processedOLXElements.has(current)) {
+      return true;
+    }
+    current = current.parentElement;
+  }
+  return false;
+}
+
 function scanAndConvert(rootNode) {
   // First, scan for OLX-specific price elements
   scanOLXPriceElements(rootNode);
@@ -357,6 +369,9 @@ function scanAndConvert(rootNode) {
     
     // Skip if text node is inside an element we created (check all ancestors)
     if (isInsideProcessedElement(node)) continue;
+    
+    // Skip if text node is inside a processed OLX element (to prevent duplicates)
+    if (isInsideProcessedOLXElement(node)) continue;
     
     // Skip if text node is inside a strikethrough element (old price)
     if (isStrikethrough(node.parentElement)) continue;
