@@ -236,6 +236,22 @@ function isStrikethrough(element) {
   return false;
 }
 
+function isOldPriceElement(element) {
+  // Check if element has old price classes
+  if (element.classList.contains('olx-text--body-medium')) {
+    return true;
+  }
+  // Check if any ancestor has old price classes
+  let current = element.parentElement;
+  while (current && current !== document.body) {
+    if (current.classList && current.classList.contains('olx-text--body-medium')) {
+      return true;
+    }
+    current = current.parentElement;
+  }
+  return false;
+}
+
 function scanOLXPriceElements(rootNode) {
   // Check if we're on an OLX domain
   const currentDomain = getDomainFromUrl(window.location.href);
@@ -266,7 +282,7 @@ function scanOLXPriceElements(rootNode) {
       }
       
       // Skip if this is a body-medium element (old price) - only process title-medium
-      if (selector.includes('body-medium') || element.classList.contains('olx-text--body-medium')) {
+      if (isOldPriceElement(element)) {
         return; // Skip old price elements
       }
       
@@ -293,6 +309,10 @@ function scanOLXPriceElements(rootNode) {
               }
               // Skip if text node is inside a strikethrough element
               if (isStrikethrough(node.parentElement)) {
+                return NodeFilter.FILTER_REJECT;
+              }
+              // Skip if text node is inside an old price element
+              if (isOldPriceElement(node.parentElement)) {
                 return NodeFilter.FILTER_REJECT;
               }
               return NodeFilter.FILTER_ACCEPT;
@@ -366,6 +386,12 @@ function scanAndConvert(rootNode) {
     
     // Skip if text node is inside an element we created (check all ancestors)
     if (isInsideProcessedElement(node)) continue;
+    
+    // Skip if text node is inside a strikethrough element (old price)
+    if (isStrikethrough(node.parentElement)) continue;
+    
+    // Skip if text node is inside an old price element (body-medium class)
+    if (isOldPriceElement(node.parentElement)) continue;
 
     const text = node.nodeValue;
     
