@@ -1887,12 +1887,8 @@ function App() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className="flex items-center gap-3 mb-6">
-        <img src="/icons/icon128.png" alt="How Much Logo" className="w-12 h-12 flex-shrink-0" style={{ imageRendering: 'pixelated' }} />
-        <h1 className="text-lg font-bold">
-          <span className="text-foreground">HOW</span>
-          <span className="text-green-600">MUCH?</span>
-        </h1>
+      <div className="flex items-center mb-6">
+        <img src="/icons/logo-dark.svg" alt="How Much Logo" className="h-8" />
       </div>
 
       <Tabs defaultValue="home" className="w-full">
@@ -2019,7 +2015,7 @@ function App() {
                     </Button>
                   </DialogClose>
                 </DialogHeader>
-                <div className="flex-1 overflow-auto p-6">
+                <div className="flex-1 overflow-auto">
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <h4 className="font-medium text-sm">{t('wageCalculator', language)}</h4>

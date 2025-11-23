@@ -164,10 +164,25 @@ function init() {
     if (areaName === 'local' && changes.spacingMode) {
       spacingMode = changes.spacingMode.newValue || 'default';
       // Re-process the entire page with new spacing mode
-      // Remove processed markers and re-scan
-      document.querySelectorAll('[data-timecost-processed]').forEach(el => {
-        el.removeAttribute('data-timecost-processed');
+      // Remove timecost elements we created
+      document.querySelectorAll('[data-timecost-trigger]').forEach(el => {
+        const parent = el.parentNode;
+        if (parent) {
+          const originalPrice = el.getAttribute('data-original-price') || el.textContent;
+          const textNode = document.createTextNode(originalPrice);
+          parent.replaceChild(textNode, el);
+          parent.normalize();
+        }
       });
+      // Remove timecost spans (for default and compact modes)
+      document.querySelectorAll('span[style*="background-color: #dafaa2"]').forEach(span => {
+        const parent = span.parentNode;
+        if (parent && parent.textContent.includes('R$') || parent.textContent.includes('$') || parent.textContent.includes('€')) {
+          // Try to restore original text - this is a best effort approach
+          parent.normalize();
+        }
+      });
+      // Re-scan the page (WeakSet will naturally track new nodes as new references)
       scanAndConvert(document.body);
     }
   });
@@ -184,6 +199,9 @@ function loadGoogleFont(fontFamily, fontWeight) {
   document.head.appendChild(link);
 }
 
+// Track processed text nodes to avoid reprocessing
+const processedTextNodes = new WeakSet();
+
 function scanAndConvert(rootNode) {
   // TreeWalker is efficient for finding text nodes
   const walker = document.createTreeWalker(
@@ -197,12 +215,22 @@ function scanAndConvert(rootNode) {
   while (node = walker.nextNode()) {
     // Skip if already processed or inside script/style tags
     if (node.parentElement.tagName.match(/SCRIPT|STYLE|TEXTAREA|INPUT/)) continue;
-    if (node.parentElement.getAttribute('data-timecost-processed')) continue;
+    
+    // Skip if this text node has already been processed
+    if (processedTextNodes.has(node)) continue;
+    
+    // Skip if text node is inside an element we created (timecost wrapper)
+    if (node.parentElement && (
+      node.parentElement.hasAttribute('data-timecost-trigger') ||
+      node.parentElement.classList.contains('timecost-wrapper')
+    )) continue;
 
     const text = node.nodeValue;
     
     // Check if text contains a price
     if (text && PRICE_REGEX.test(text)) {
+      // Mark as processed before processing to avoid reprocessing
+      processedTextNodes.add(node);
       processNode(node);
     }
   }
@@ -559,6 +587,5 @@ function processNode(textNode) {
   // Replace the text node with the fragment
   const parent = textNode.parentNode;
   parent.replaceChild(fragment, textNode);
-  parent.setAttribute('data-timecost-processed', 'true');
 }
 
