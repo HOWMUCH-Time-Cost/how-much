@@ -243,8 +243,7 @@ function scanOLXPriceElements(rootNode) {
       // Mark as processed
       processedOLXElements.add(element);
       
-      // Find all text nodes within this element and process them
-      // This handles cases where price might be in nested elements or direct text
+      // First, try to find text nodes within this element
       const walker = document.createTreeWalker(
         element,
         NodeFilter.SHOW_TEXT,
@@ -263,12 +262,41 @@ function scanOLXPriceElements(rootNode) {
         false
       );
       
+      let foundPriceNode = false;
       let textNode;
       while (textNode = walker.nextNode()) {
         const nodeText = textNode.nodeValue;
         if (nodeText && nodeText.trim() && new RegExp(PRICE_REGEX).test(nodeText)) {
           processedTextNodes.add(textNode);
           processNode(textNode);
+          foundPriceNode = true;
+        }
+      }
+      
+      // If no text node was found with a price, but the element itself contains a price,
+      // create a text node from the element's text content and process it
+      if (!foundPriceNode && text && text.trim()) {
+        // Check if element has direct text content (not just in child nodes)
+        const directText = Array.from(element.childNodes)
+          .filter(node => node.nodeType === Node.TEXT_NODE)
+          .map(node => node.textContent)
+          .join('')
+          .trim();
+        
+        if (directText && new RegExp(PRICE_REGEX).test(directText)) {
+          // Find or create a text node to process
+          const firstTextNode = Array.from(element.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
+          if (firstTextNode && !processedTextNodes.has(firstTextNode)) {
+            processedTextNodes.add(firstTextNode);
+            processNode(firstTextNode);
+          } else if (element.firstChild && element.firstChild.nodeType === Node.TEXT_NODE) {
+            // Use the first text node if available
+            const textNode = element.firstChild;
+            if (!processedTextNodes.has(textNode)) {
+              processedTextNodes.add(textNode);
+              processNode(textNode);
+            }
+          }
         }
       }
     }
