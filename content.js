@@ -202,6 +202,19 @@ function loadGoogleFont(fontFamily, fontWeight) {
 // Track processed text nodes to avoid reprocessing
 const processedTextNodes = new WeakSet();
 
+// Helper function to check if a node or any of its ancestors is inside an element we created
+function isInsideProcessedElement(node) {
+  let current = node.parentElement;
+  while (current && current !== document.body) {
+    if (current.hasAttribute('data-timecost-trigger') || 
+        current.classList.contains('timecost-wrapper')) {
+      return true;
+    }
+    current = current.parentElement;
+  }
+  return false;
+}
+
 function scanAndConvert(rootNode) {
   // TreeWalker is efficient for finding text nodes
   const walker = document.createTreeWalker(
@@ -214,21 +227,18 @@ function scanAndConvert(rootNode) {
   let node;
   while (node = walker.nextNode()) {
     // Skip if already processed or inside script/style tags
-    if (node.parentElement.tagName.match(/SCRIPT|STYLE|TEXTAREA|INPUT/)) continue;
+    if (!node.parentElement || node.parentElement.tagName.match(/SCRIPT|STYLE|TEXTAREA|INPUT/)) continue;
     
     // Skip if this text node has already been processed
     if (processedTextNodes.has(node)) continue;
     
-    // Skip if text node is inside an element we created (timecost wrapper)
-    if (node.parentElement && (
-      node.parentElement.hasAttribute('data-timecost-trigger') ||
-      node.parentElement.classList.contains('timecost-wrapper')
-    )) continue;
+    // Skip if text node is inside an element we created (check all ancestors)
+    if (isInsideProcessedElement(node)) continue;
 
     const text = node.nodeValue;
     
-    // Check if text contains a price
-    if (text && PRICE_REGEX.test(text)) {
+    // Check if text contains a price (create new regex instance to avoid state issues)
+    if (text && text.trim() && new RegExp(PRICE_REGEX).test(text)) {
       // Mark as processed before processing to avoid reprocessing
       processedTextNodes.add(node);
       processNode(node);

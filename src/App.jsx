@@ -1998,7 +1998,8 @@ function App() {
               placeholder="0"
               value={salary}
               onChange={handleSalaryChange}
-              className={`pl-12 pr-10 ${error.field === 'salary' ? 'border-destructive' : ''}`}
+              className={`pr-10 ${error.field === 'salary' ? 'border-destructive' : ''}`}
+              style={{ paddingLeft: '32px' }}
               inputMode="numeric"
             />
             <Dialog open={salaryDialogOpen} onOpenChange={setSalaryDialogOpen}>
