@@ -13,8 +13,9 @@ const CURRENCY_CONFIG = {
 };
 
 // Regex patterns to find prices in text
-// Matches: $100, $100.00, 100 USD, €100, 100 €, R$ 1.000,00
-const PRICE_REGEX = /((R\$|€|\$)\s?(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?))|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?\s?(USD|EUR|BRL))/gi;
+// Matches: $100, $100.00, 100 USD, €100, 100 €, R$ 1.000,00, R$ 245
+// Updated to better match simple prices without separators
+const PRICE_REGEX = /((R\$|€|\$)\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d+))|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?\s*(USD|EUR|BRL))/gi;
 
 // US Federal minimum wage: $7.25/hour * 40 hours/week * 4.33 weeks/month = $1,256.67/month
 const US_MONTHLY_MINIMUM_WAGE = 1256.67;
