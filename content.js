@@ -219,6 +219,23 @@ function isInsideProcessedElement(node) {
 // Track processed OLX price elements
 const processedOLXElements = new WeakSet();
 
+function isStrikethrough(element) {
+  // Check if element or any ancestor has strikethrough styling
+  let current = element;
+  while (current && current !== document.body) {
+    const style = window.getComputedStyle(current);
+    if (style.textDecoration.includes('line-through') || 
+        style.textDecorationLine === 'line-through' ||
+        current.tagName === 'S' || 
+        current.tagName === 'STRIKE' ||
+        current.tagName === 'DEL') {
+      return true;
+    }
+    current = current.parentElement;
+  }
+  return false;
+}
+
 function scanOLXPriceElements(rootNode) {
   // Check if we're on an OLX domain
   const currentDomain = getDomainFromUrl(window.location.href);
@@ -226,15 +243,14 @@ function scanOLXPriceElements(rootNode) {
     return;
   }
 
-  // Find OLX price elements - try multiple selectors to catch different OLX price formats
-  // Priority: current price (title-medium) > old price selectors
+  // Only target the current price - skip old prices
+  // Priority: current price (title-medium) only
   const selectors = [
-    'span.olx-text--title-medium', // Current price (larger, bold)
-    'div.typo-body-large.olx-adcard__price.font-semibold', // Original selector
-    'span.olx-text.olx-text--body-medium.olx-text--semibold', // Old price (strikethrough)
+    'span.olx-text--title-medium', // Current price (larger, bold) - PRIMARY
+    'div.typo-body-large.olx-adcard__price.font-semibold', // Fallback selector
   ];
   
-  selectors.forEach((selector, index) => {
+  selectors.forEach((selector) => {
     const olxPriceElements = rootNode.querySelectorAll(selector);
     
     olxPriceElements.forEach(element => {
@@ -244,18 +260,14 @@ function scanOLXPriceElements(rootNode) {
       // Skip if inside an element we created
       if (isInsideProcessedElement(element)) return;
       
-      // Skip old/strikethrough prices - prioritize current price
-      // If element or parent has text-decoration: line-through, skip it
-      const computedStyle = window.getComputedStyle(element);
-      const parentStyle = element.parentElement ? window.getComputedStyle(element.parentElement) : null;
-      if (computedStyle.textDecoration.includes('line-through') || 
-          (parentStyle && parentStyle.textDecoration.includes('line-through'))) {
-        // Only skip if we're not on the first selector (current price selector)
-        if (index === 0) {
-          // Even if it has line-through, process it if it's the title-medium (current price)
-        } else {
-          return; // Skip old prices
-        }
+      // Skip old/strikethrough prices completely
+      if (isStrikethrough(element)) {
+        return; // Skip this element
+      }
+      
+      // Skip if this is a body-medium element (old price) - only process title-medium
+      if (selector.includes('body-medium') || element.classList.contains('olx-text--body-medium')) {
+        return; // Skip old price elements
       }
       
       // Get the text content
@@ -277,6 +289,10 @@ function scanOLXPriceElements(rootNode) {
                 return NodeFilter.FILTER_REJECT;
               }
               if (isInsideProcessedElement(node)) {
+                return NodeFilter.FILTER_REJECT;
+              }
+              // Skip if text node is inside a strikethrough element
+              if (isStrikethrough(node.parentElement)) {
                 return NodeFilter.FILTER_REJECT;
               }
               return NodeFilter.FILTER_ACCEPT;
