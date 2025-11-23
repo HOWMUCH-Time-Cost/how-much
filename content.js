@@ -243,17 +243,30 @@ function scanOLXPriceElements(rootNode) {
       // Mark as processed
       processedOLXElements.add(element);
       
-      // Find text nodes within this element and process them
+      // Find all text nodes within this element and process them
+      // This handles cases where price might be in nested elements or direct text
       const walker = document.createTreeWalker(
         element,
         NodeFilter.SHOW_TEXT,
-        null,
+        {
+          acceptNode: function(node) {
+            // Only process text nodes that aren't already processed
+            if (processedTextNodes.has(node)) {
+              return NodeFilter.FILTER_REJECT;
+            }
+            if (isInsideProcessedElement(node)) {
+              return NodeFilter.FILTER_REJECT;
+            }
+            return NodeFilter.FILTER_ACCEPT;
+          }
+        },
         false
       );
       
       let textNode;
       while (textNode = walker.nextNode()) {
-        if (!processedTextNodes.has(textNode) && !isInsideProcessedElement(textNode)) {
+        const nodeText = textNode.nodeValue;
+        if (nodeText && nodeText.trim() && new RegExp(PRICE_REGEX).test(nodeText)) {
           processedTextNodes.add(textNode);
           processNode(textNode);
         }
