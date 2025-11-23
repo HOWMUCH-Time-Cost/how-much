@@ -339,82 +339,84 @@ function processAmazonPrices(rootNode) {
       
       // 2. Clean the string
       let cleanString = priceToProcess.replace(/[^\d.,]/g, '').trim();
-        
-        // 3. Detect format (same logic as processNode)
-        let isUSDFormat = false;
-        const usdPattern = /,\d{3}\./;
-        const brlPattern = /\.\d{3},/;
-        
-        if (usdPattern.test(cleanString)) {
+      
+      // 3. Detect format (same logic as processNode)
+      let isUSDFormat = false;
+      const usdPattern = /,\d{3}\./;
+      const brlPattern = /\.\d{3},/;
+      
+      if (usdPattern.test(cleanString)) {
+        isUSDFormat = true;
+      } else if (brlPattern.test(cleanString)) {
+        isUSDFormat = false;
+      } else if (cleanString.includes('.') && cleanString.includes(',')) {
+        const dotIndex = cleanString.lastIndexOf('.');
+        const commaIndex = cleanString.lastIndexOf(',');
+        isUSDFormat = dotIndex > commaIndex;
+      } else if (cleanString.includes('.')) {
+        const parts = cleanString.split('.');
+        const lastPart = parts[parts.length - 1];
+        if (parts.length === 2 && lastPart.length <= 2) {
           isUSDFormat = true;
-        } else if (brlPattern.test(cleanString)) {
+        } else if (parts.length > 2 || lastPart.length === 3) {
           isUSDFormat = false;
-        } else if (cleanString.includes('.') && cleanString.includes(',')) {
-          const dotIndex = cleanString.lastIndexOf('.');
-          const commaIndex = cleanString.lastIndexOf(',');
-          isUSDFormat = dotIndex > commaIndex;
+        } else {
+          isUSDFormat = (lastPart.length <= 2);
+        }
+      } else if (cleanString.includes(',')) {
+        const parts = cleanString.split(',');
+        const lastPart = parts[parts.length - 1];
+        isUSDFormat = (lastPart.length === 3 && parts.length > 1);
+      } else {
+        isUSDFormat = (detectedCurrency === 'USD');
+      }
+      
+      // 4. Parse based on format
+      let priceValue = 0;
+      if (isUSDFormat) {
+        if (cleanString.includes('.')) {
+          cleanString = cleanString.replace(/,/g, '');
+        } else if (cleanString.includes(',')) {
+          cleanString = cleanString.replace(/,/g, '');
+        }
+      } else {
+        if (cleanString.includes(',')) {
+          cleanString = cleanString.replace(/\./g, '').replace(',', '.');
         } else if (cleanString.includes('.')) {
           const parts = cleanString.split('.');
           const lastPart = parts[parts.length - 1];
-          if (parts.length === 2 && lastPart.length <= 2) {
-            isUSDFormat = true;
-          } else if (parts.length > 2 || lastPart.length === 3) {
-            isUSDFormat = false;
+          if (parts.length > 2) {
+            cleanString = cleanString.replace(/\./g, '');
+          } else if (lastPart.length === 3) {
+            cleanString = cleanString.replace(/\./g, '');
+          } else if (lastPart.length <= 2) {
+            // Keep as is
           } else {
-            isUSDFormat = (lastPart.length <= 2);
-          }
-        } else if (cleanString.includes(',')) {
-          const parts = cleanString.split(',');
-          const lastPart = parts[parts.length - 1];
-          isUSDFormat = (lastPart.length === 3 && parts.length > 1);
-        } else {
-          isUSDFormat = (detectedCurrency === 'USD');
-        }
-        
-        // 4. Parse based on format
-        let priceValue = 0;
-        if (isUSDFormat) {
-          if (cleanString.includes('.')) {
-            cleanString = cleanString.replace(/,/g, '');
-          } else if (cleanString.includes(',')) {
-            cleanString = cleanString.replace(/,/g, '');
-          }
-        } else {
-          if (cleanString.includes(',')) {
-            cleanString = cleanString.replace(/\./g, '').replace(',', '.');
-          } else if (cleanString.includes('.')) {
-            const parts = cleanString.split('.');
-            const lastPart = parts[parts.length - 1];
-            if (parts.length > 2) {
-              cleanString = cleanString.replace(/\./g, '');
-            } else if (lastPart.length === 3) {
-              cleanString = cleanString.replace(/\./g, '');
-            } else if (lastPart.length <= 2) {
-              // Keep as is
-            } else {
-              cleanString = cleanString.replace(/\./g, '');
-            }
+            cleanString = cleanString.replace(/\./g, '');
           }
         }
-        
-        priceValue = parseFloat(cleanString);
-        if (isNaN(priceValue) || priceValue === 0) return;
-        
-        // 5. Calculate time cost
-        const priceInUSD = priceValue / EXCHANGE_RATES[detectedCurrency];
-        const salaryInUSD = userSalary / EXCHANGE_RATES[userCurrency];
-        const dailyWageInUSD = salaryInUSD / 22;
-        const daysCost = priceInUSD / dailyWageInUSD;
-        const totalHours = daysCost * 8;
-        
-        let daysString = "";
-        if (totalHours < 1) {
-          const minutes = Math.round(totalHours * 60);
-          daysString = `${minutes}m`;
-        } else {
-          const decimalHours = Math.round(totalHours * 10) / 10;
-          daysString = `${decimalHours}h`;
-        }
+      }
+      
+      priceValue = parseFloat(cleanString);
+      if (isNaN(priceValue) || priceValue === 0) {
+        return; // Skip this container if price is invalid
+      }
+      
+      // 5. Calculate time cost
+      const priceInUSD = priceValue / EXCHANGE_RATES[detectedCurrency];
+      const salaryInUSD = userSalary / EXCHANGE_RATES[userCurrency];
+      const dailyWageInUSD = salaryInUSD / 22;
+      const daysCost = priceInUSD / dailyWageInUSD;
+      const totalHours = daysCost * 8;
+      
+      let daysString = "";
+      if (totalHours < 1) {
+        const minutes = Math.round(totalHours * 60);
+        daysString = `${minutes}m`;
+      } else {
+        const decimalHours = Math.round(totalHours * 10) / 10;
+        daysString = `${decimalHours}h`;
+      }
         
       processedMatches.push({
         match: priceText,
