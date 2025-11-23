@@ -701,13 +701,18 @@ function processNode(textNode) {
       fragment.appendChild(priceWrapper);
     } else {
       // Default mode: Show price + time cost side by side (current behavior)
-      fragment.appendChild(document.createTextNode(matchData.match));
+      // Wrap both in a container for proper vertical alignment
+      const wrapper = document.createElement('span');
+      wrapper.style.cssText = 'display: inline-flex; align-items: center; vertical-align: middle;';
+      
+      const priceSpan = document.createElement('span');
+      priceSpan.textContent = matchData.match;
+      wrapper.appendChild(priceSpan);
       
       const timeCostSpan = document.createElement('span');
       timeCostSpan.textContent = ` ${matchData.timeCost}`;
       timeCostSpan.style.cssText = `
         display: inline-block;
-        vertical-align: middle;
         margin-left: 4px;
         padding: 2px 6px;
         border-radius: 100px;
@@ -718,7 +723,8 @@ function processNode(textNode) {
         font-weight: 700;
         line-height: 1.2;
       `;
-      fragment.appendChild(timeCostSpan);
+      wrapper.appendChild(timeCostSpan);
+      fragment.appendChild(wrapper);
     }
     
     lastIndex = matchData.index + matchData.length;
