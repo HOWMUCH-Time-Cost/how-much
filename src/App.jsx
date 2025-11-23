@@ -2172,8 +2172,8 @@ function App() {
           )}
         </div>
 
-        <Button onClick={handleSave} className="w-full lowercase" size="default">
-          {t('saveAndApply', language)}
+        <Button onClick={handleSave} className="w-full font-bold" style={{ fontFamily: "'Boldonse', sans-serif" }} size="default">
+          HOWMUCH?
         </Button>
 
         {status.show && (
