@@ -1946,7 +1946,7 @@ function App() {
                   </Button>
                 </DialogClose>
               </DialogHeader>
-              <div className="flex-1 overflow-auto">
+              <div className="flex-1 overflow-auto p-6">
                 <Command>
                   <CommandInput placeholder={t('searchCurrency', language)} className="h-9" aria-label={t('searchCurrency', language)} />
                   <CommandList aria-label={t('chooseCurrency', language)}>
@@ -2015,7 +2015,7 @@ function App() {
                     </Button>
                   </DialogClose>
                 </DialogHeader>
-                <div className="flex-1 overflow-auto">
+                <div className="flex-1 overflow-auto p-6">
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <h4 className="font-medium text-sm">{t('wageCalculator', language)}</h4>
