@@ -148,15 +148,40 @@ function init() {
   // Run immediately
   scanAndConvert(document.body);
 
+  // Debounce function to prevent excessive scanning
+  let debounceTimer = null;
+  const debounceDelay = 100; // Wait 100ms after last mutation before scanning
+  
   // Run whenever the page content changes (for dynamic sites like Amazon/infinite scroll)
   const observer = new MutationObserver((mutations) => {
+    // Clear existing timer
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+    
+    // Collect all added nodes to process them together
+    const nodesToProcess = [];
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
-        if (node.nodeType === 1) { // Element node
-          scanAndConvert(node);
+        if (node.nodeType === 1 && node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE') {
+          // Skip if inside our created elements
+          if (!isInsideProcessedElement(node)) {
+            // Skip OLX elements that are already processed
+            if (!node.hasAttribute || !processedOLXElements.has(node)) {
+              nodesToProcess.push(node);
+            }
+          }
         }
       });
     });
+    
+    // Debounce the scanning to batch multiple mutations
+    debounceTimer = setTimeout(() => {
+      nodesToProcess.forEach((node) => {
+        scanAndConvert(node);
+      });
+      debounceTimer = null;
+    }, debounceDelay);
   });
   observer.observe(document.body, { childList: true, subtree: true });
   
@@ -165,26 +190,48 @@ function init() {
     if (areaName === 'local' && changes.spacingMode) {
       spacingMode = changes.spacingMode.newValue || 'default';
       // Re-process the entire page with new spacing mode
-      // Remove timecost elements we created
-      document.querySelectorAll('[data-timecost-trigger]').forEach(el => {
-        const parent = el.parentNode;
-        if (parent) {
-          const originalPrice = el.getAttribute('data-original-price') || el.textContent;
-          const textNode = document.createTextNode(originalPrice);
-          parent.replaceChild(textNode, el);
-          parent.normalize();
+      // Use requestAnimationFrame to batch DOM operations
+      requestAnimationFrame(() => {
+        // Remove timecost elements we created (batch queries)
+        const triggers = document.querySelectorAll('[data-timecost-trigger]');
+        const spans = document.querySelectorAll('span[style*="background-color: #dafaa2"]');
+        
+        // Process in smaller batches to avoid blocking
+        const processBatch = (elements, startIndex, batchSize = 50) => {
+          const endIndex = Math.min(startIndex + batchSize, elements.length);
+          for (let i = startIndex; i < endIndex; i++) {
+            const el = elements[i];
+            const parent = el.parentNode;
+            if (parent) {
+              if (el.hasAttribute('data-timecost-trigger')) {
+                const originalPrice = el.getAttribute('data-original-price') || el.textContent;
+                const textNode = document.createTextNode(originalPrice);
+                parent.replaceChild(textNode, el);
+                parent.normalize();
+              } else {
+                // For spans, just normalize parent
+                parent.normalize();
+              }
+            }
+          }
+          
+          if (endIndex < elements.length) {
+            // Process next batch asynchronously
+            setTimeout(() => processBatch(elements, endIndex, batchSize), 0);
+          } else {
+            // All batches processed, now rescan
+            scanAndConvert(document.body);
+          }
+        };
+        
+        // Combine and deduplicate elements
+        const allElements = Array.from(new Set([...triggers, ...spans]));
+        if (allElements.length > 0) {
+          processBatch(allElements, 0);
+        } else {
+          scanAndConvert(document.body);
         }
       });
-      // Remove timecost spans (for default and compact modes)
-      document.querySelectorAll('span[style*="background-color: #dafaa2"]').forEach(span => {
-        const parent = span.parentNode;
-        if (parent && parent.textContent.includes('R$') || parent.textContent.includes('$') || parent.textContent.includes('€')) {
-          // Try to restore original text - this is a best effort approach
-          parent.normalize();
-        }
-      });
-      // Re-scan the page (WeakSet will naturally track new nodes as new references)
-      scanAndConvert(document.body);
     }
   });
 }
