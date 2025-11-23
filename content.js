@@ -226,81 +226,104 @@ function scanOLXPriceElements(rootNode) {
     return;
   }
 
-  // Find all OLX price divs with the specific classes
-  const olxPriceElements = rootNode.querySelectorAll('div.typo-body-large.olx-adcard__price.font-semibold');
+  // Find OLX price elements - try multiple selectors to catch different OLX price formats
+  // Priority: current price (title-medium) > old price selectors
+  const selectors = [
+    'span.olx-text--title-medium', // Current price (larger, bold)
+    'div.typo-body-large.olx-adcard__price.font-semibold', // Original selector
+    'span.olx-text.olx-text--body-medium.olx-text--semibold', // Old price (strikethrough)
+  ];
   
-  olxPriceElements.forEach(element => {
-    // Skip if already processed
-    if (processedOLXElements.has(element)) return;
+  selectors.forEach((selector, index) => {
+    const olxPriceElements = rootNode.querySelectorAll(selector);
     
-    // Skip if inside an element we created
-    if (isInsideProcessedElement(element)) return;
-    
-    // Get the text content
-    const text = element.textContent || element.innerText;
-    
-    // Check if text contains a price
-    if (text && text.trim() && new RegExp(PRICE_REGEX).test(text)) {
-      // Mark as processed
-      processedOLXElements.add(element);
+    olxPriceElements.forEach(element => {
+      // Skip if already processed
+      if (processedOLXElements.has(element)) return;
       
-      // First, try to find text nodes within this element
-      const walker = document.createTreeWalker(
-        element,
-        NodeFilter.SHOW_TEXT,
-        {
-          acceptNode: function(node) {
-            // Only process text nodes that aren't already processed
-            if (processedTextNodes.has(node)) {
-              return NodeFilter.FILTER_REJECT;
-            }
-            if (isInsideProcessedElement(node)) {
-              return NodeFilter.FILTER_REJECT;
-            }
-            return NodeFilter.FILTER_ACCEPT;
-          }
-        },
-        false
-      );
+      // Skip if inside an element we created
+      if (isInsideProcessedElement(element)) return;
       
-      let foundPriceNode = false;
-      let textNode;
-      while (textNode = walker.nextNode()) {
-        const nodeText = textNode.nodeValue;
-        if (nodeText && nodeText.trim() && new RegExp(PRICE_REGEX).test(nodeText)) {
-          processedTextNodes.add(textNode);
-          processNode(textNode);
-          foundPriceNode = true;
+      // Skip old/strikethrough prices - prioritize current price
+      // If element or parent has text-decoration: line-through, skip it
+      const computedStyle = window.getComputedStyle(element);
+      const parentStyle = element.parentElement ? window.getComputedStyle(element.parentElement) : null;
+      if (computedStyle.textDecoration.includes('line-through') || 
+          (parentStyle && parentStyle.textDecoration.includes('line-through'))) {
+        // Only skip if we're not on the first selector (current price selector)
+        if (index === 0) {
+          // Even if it has line-through, process it if it's the title-medium (current price)
+        } else {
+          return; // Skip old prices
         }
       }
       
-      // If no text node was found with a price, but the element itself contains a price,
-      // create a text node from the element's text content and process it
-      if (!foundPriceNode && text && text.trim()) {
-        // Check if element has direct text content (not just in child nodes)
-        const directText = Array.from(element.childNodes)
-          .filter(node => node.nodeType === Node.TEXT_NODE)
-          .map(node => node.textContent)
-          .join('')
-          .trim();
+      // Get the text content
+      const text = element.textContent || element.innerText;
+      
+      // Check if text contains a price
+      if (text && text.trim() && new RegExp(PRICE_REGEX).test(text)) {
+        // Mark as processed
+        processedOLXElements.add(element);
         
-        if (directText && new RegExp(PRICE_REGEX).test(directText)) {
-          // Find or create a text node to process
-          const firstTextNode = Array.from(element.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
-          if (firstTextNode && !processedTextNodes.has(firstTextNode)) {
-            processedTextNodes.add(firstTextNode);
-            processNode(firstTextNode);
-          } else if (element.firstChild && element.firstChild.nodeType === Node.TEXT_NODE) {
-            // Use the first text node if available
-            const textNode = element.firstChild;
-            if (!processedTextNodes.has(textNode)) {
-              processedTextNodes.add(textNode);
-              processNode(textNode);
+        // First, try to find text nodes within this element
+        const walker = document.createTreeWalker(
+          element,
+          NodeFilter.SHOW_TEXT,
+          {
+            acceptNode: function(node) {
+              // Only process text nodes that aren't already processed
+              if (processedTextNodes.has(node)) {
+                return NodeFilter.FILTER_REJECT;
+              }
+              if (isInsideProcessedElement(node)) {
+                return NodeFilter.FILTER_REJECT;
+              }
+              return NodeFilter.FILTER_ACCEPT;
+            }
+          },
+          false
+        );
+        
+        let foundPriceNode = false;
+        let textNode;
+        while (textNode = walker.nextNode()) {
+          const nodeText = textNode.nodeValue;
+          if (nodeText && nodeText.trim() && new RegExp(PRICE_REGEX).test(nodeText)) {
+            processedTextNodes.add(textNode);
+            processNode(textNode);
+            foundPriceNode = true;
+          }
+        }
+        
+        // If no text node was found with a price, but the element itself contains a price,
+        // create a text node from the element's text content and process it
+        if (!foundPriceNode && text && text.trim()) {
+          // Check if element has direct text content (not just in child nodes)
+          const directText = Array.from(element.childNodes)
+            .filter(node => node.nodeType === Node.TEXT_NODE)
+            .map(node => node.textContent)
+            .join('')
+            .trim();
+          
+          if (directText && new RegExp(PRICE_REGEX).test(directText)) {
+            // Find or create a text node to process
+            const firstTextNode = Array.from(element.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
+            if (firstTextNode && !processedTextNodes.has(firstTextNode)) {
+              processedTextNodes.add(firstTextNode);
+              processNode(firstTextNode);
+            } else if (element.firstChild && element.firstChild.nodeType === Node.TEXT_NODE) {
+              // Use the first text node if available
+              const textNode = element.firstChild;
+              if (!processedTextNodes.has(textNode)) {
+                processedTextNodes.add(textNode);
+                processNode(textNode);
+              }
             }
           }
         }
       }
-    }
+    });
   });
 }
 
