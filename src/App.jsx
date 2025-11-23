@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Check, ChevronsUpDown, Globe, X, Plus, ChevronDown, ChevronRight, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -1478,6 +1478,7 @@ function App() {
   const [hourlyWage, setHourlyWage] = useState('')
   const [hoursPerWeek, setHoursPerWeek] = useState('40')
   const [spacingMode, setSpacingMode] = useState('default')
+  const isInitialLoadRef = useRef(true)
 
   const formatNumber = useCallback((value, currencyCode) => {
     if (!value) return ''
@@ -1626,6 +1627,8 @@ function App() {
         if (data.spacingMode) {
           setSpacingMode(data.spacingMode)
         }
+        // Mark initial load as complete
+        isInitialLoadRef.current = false
       })
     } else {
       // Fallback when chrome.storage is not available (e.g., in development)
@@ -1636,6 +1639,8 @@ function App() {
       setSalary(formatNumber(centsValue, 'USD'))
       // Set default whitelist for development
       setWhitelist(DEFAULT_WHITELIST)
+      // Mark initial load as complete
+      isInitialLoadRef.current = false
     }
   }, [formatNumber, updateCurrencyDisplay])
 
@@ -1751,8 +1756,13 @@ function App() {
     }
   }
   
-  // Save spacing mode immediately when it changes
+  // Save spacing mode immediately when it changes (but not on initial load)
   useEffect(() => {
+    // Skip reload on initial load - only reload when user actually changes the setting
+    if (isInitialLoadRef.current) {
+      return
+    }
+    
     if (typeof chrome !== 'undefined' && chrome.storage) {
       chrome.storage.local.set({ spacingMode: spacingMode }, () => {
         // Reload active tab to apply changes

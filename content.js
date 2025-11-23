@@ -268,7 +268,8 @@ function extractAmazonPrice(priceElement) {
   const offscreenSpan = priceElement.querySelector('.a-offscreen');
   if (offscreenSpan) {
     const offscreenText = offscreenSpan.textContent.trim();
-    if (offscreenText && new RegExp(PRICE_REGEX).test(offscreenText)) {
+    // Be more lenient - if it contains a currency symbol and numbers, use it
+    if (offscreenText && (/(R\$|€|\$)/.test(offscreenText) && /\d/.test(offscreenText))) {
       return offscreenText;
     }
   }
@@ -291,7 +292,8 @@ function extractAmazonPrice(priceElement) {
       priceText += fractionSpan.textContent.trim();
     }
     
-    if (priceText && new RegExp(PRICE_REGEX).test(priceText)) {
+    // Be more lenient - if it contains a currency symbol and numbers, use it
+    if (priceText && (/(R\$|€|\$)/.test(priceText) && /\d/.test(priceText))) {
       return priceText;
     }
   }
@@ -320,30 +322,23 @@ function processAmazonPrices(rootNode) {
       return;
     }
     
-    // Process the price using the existing processNode logic
-    // Create a temporary text node to reuse existing processing logic
-    const tempTextNode = document.createTextNode(priceText);
+    // Process the price directly (we know it's valid since we extracted it from Amazon structure)
     const processedMatches = [];
     
-    // Use the same regex matching logic from processNode
+    // Try regex first, but if it doesn't match, process the priceText directly
     const regex = new RegExp(PRICE_REGEX);
-    let match;
-    while ((match = regex.exec(priceText)) !== null) {
-      const matchData = {
-        match: match[0],
-        index: match.index,
-        length: match[0].length
-      };
+    let match = regex.exec(priceText);
+    let priceToProcess = match ? match[0] : priceText;
+    
+    // Process the price
+    try {
+      // 1. Identify currency
+      let detectedCurrency = 'USD';
+      if (priceToProcess.includes('R$') || priceToProcess.includes('BRL')) detectedCurrency = 'BRL';
+      else if (priceToProcess.includes('€') || priceToProcess.includes('EUR')) detectedCurrency = 'EUR';
       
-      // Process the match (reuse logic from processNode)
-      try {
-        // 1. Identify currency
-        let detectedCurrency = 'USD';
-        if (match[0].includes('R$') || match[0].includes('BRL')) detectedCurrency = 'BRL';
-        else if (match[0].includes('€') || match[0].includes('EUR')) detectedCurrency = 'EUR';
-        
-        // 2. Clean the string
-        let cleanString = match[0].replace(/[^\d.,]/g, '').trim();
+      // 2. Clean the string
+      let cleanString = priceToProcess.replace(/[^\d.,]/g, '').trim();
         
         // 3. Detect format (same logic as processNode)
         let isUSDFormat = false;
@@ -421,13 +416,14 @@ function processAmazonPrices(rootNode) {
           daysString = `${decimalHours}h`;
         }
         
-        processedMatches.push({
-          ...matchData,
-          timeCost: daysString
-        });
-      } catch (e) {
-        console.error("TimeCost Error parsing Amazon price:", match[0], e);
-      }
+      processedMatches.push({
+        match: priceText,
+        index: 0,
+        length: priceText.length,
+        timeCost: daysString
+      });
+    } catch (e) {
+      console.error("TimeCost Error parsing Amazon price:", priceText, e);
     }
     
     if (processedMatches.length === 0) {
