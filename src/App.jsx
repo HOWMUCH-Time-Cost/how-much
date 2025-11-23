@@ -21,6 +21,14 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from '@/components/ui/dialog'
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -1460,13 +1468,13 @@ function App() {
   const [currencyDisplay, setCurrencyDisplay] = useState('-')
   const [status, setStatus] = useState({ show: false, message: '' })
   const [error, setError] = useState({ field: null, message: '' })
-  const [open, setOpen] = useState(false)
+  const [currencyDialogOpen, setCurrencyDialogOpen] = useState(false)
   const [language, setLanguage] = useState('en')
   const [whitelist, setWhitelist] = useState([])
   const [siteInput, setSiteInput] = useState('')
   const [expandedGroups, setExpandedGroups] = useState(new Set())
   const [isAddingSite, setIsAddingSite] = useState(false)
-  const [wagePopoverOpen, setWagePopoverOpen] = useState(false)
+  const [salaryDialogOpen, setSalaryDialogOpen] = useState(false)
   const [hourlyWage, setHourlyWage] = useState('')
   const [hoursPerWeek, setHoursPerWeek] = useState('40')
   const [spacingMode, setSpacingMode] = useState('default')
@@ -1676,7 +1684,7 @@ function App() {
   const handleCurrencySelect = (selectedCode) => {
     const value = selectedCode.trim().toUpperCase()
     setCurrency(value === currency ? '' : value)
-    setOpen(false)
+    setCurrencyDialogOpen(false)
     setError({ field: null, message: '' })
     
     if (salary && value && currencyInfo[value]) {
@@ -1912,12 +1920,12 @@ function App() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="currency" className="sr-only">{t('chooseCurrency', language)}</Label>
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
+          <Dialog open={currencyDialogOpen} onOpenChange={setCurrencyDialogOpen}>
+            <DialogTrigger asChild>
               <Button
                 variant="outline"
                 role="combobox"
-                aria-expanded={open}
+                aria-expanded={currencyDialogOpen}
                 aria-label={selectedCurrency ? `${t('chooseCurrency', language)}: ${selectedCurrency.displayText}` : t('chooseCurrency', language)}
                 className={cn(
                   "w-full justify-between",
@@ -1931,33 +1939,44 @@ function App() {
                 )}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[320px] p-0" align="start" aria-label={t('chooseCurrency', language)}>
-              <Command>
-                <CommandInput placeholder={t('searchCurrency', language)} className="h-9" aria-label={t('searchCurrency', language)} />
-                <CommandList aria-label={t('chooseCurrency', language)}>
-                  <CommandEmpty>{t('noCurrencyFound', language)}</CommandEmpty>
-                  <CommandGroup aria-label={t('chooseCurrency', language)}>
-                    {currencies.map((curr) => (
-                      <CommandItem
-                        key={curr.code}
-                        value={`${curr.code} ${curr.translatedCountry || curr.country} ${curr.symbol}`}
-                        onSelect={() => handleCurrencySelect(curr.code)}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            currency === curr.code ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {curr.displayText}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
+            </DialogTrigger>
+            <DialogContent className="max-w-full w-full h-full max-h-full m-0 p-0 rounded-none flex flex-col [&>button]:hidden !translate-x-0 !translate-y-0 !left-0 !top-0">
+              <DialogHeader className="px-6 py-4 border-b flex flex-row items-center justify-between">
+                <DialogTitle>{t('chooseCurrency', language)}</DialogTitle>
+                <DialogClose asChild>
+                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Close</span>
+                  </Button>
+                </DialogClose>
+              </DialogHeader>
+              <div className="flex-1 overflow-auto p-6">
+                <Command>
+                  <CommandInput placeholder={t('searchCurrency', language)} className="h-9" aria-label={t('searchCurrency', language)} />
+                  <CommandList aria-label={t('chooseCurrency', language)}>
+                    <CommandEmpty>{t('noCurrencyFound', language)}</CommandEmpty>
+                    <CommandGroup aria-label={t('chooseCurrency', language)}>
+                      {currencies.map((curr) => (
+                        <CommandItem
+                          key={curr.code}
+                          value={`${curr.code} ${curr.translatedCountry || curr.country} ${curr.symbol}`}
+                          onSelect={() => handleCurrencySelect(curr.code)}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              currency === curr.code ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {curr.displayText}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </div>
+            </DialogContent>
+          </Dialog>
           {error.field === 'currency' && (
             <p className="text-sm text-destructive">{error.message}</p>
           )}
@@ -1978,8 +1997,8 @@ function App() {
               className={`pl-12 pr-10 ${error.field === 'salary' ? 'border-destructive' : ''}`}
               inputMode="numeric"
             />
-            <Popover open={wagePopoverOpen} onOpenChange={setWagePopoverOpen}>
-              <PopoverTrigger asChild>
+            <Dialog open={salaryDialogOpen} onOpenChange={setSalaryDialogOpen}>
+              <DialogTrigger asChild>
                 <Button
                   type="button"
                   variant="ghost"
@@ -1989,157 +2008,168 @@ function App() {
                 >
                   <Settings className="h-4 w-4" />
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80 p-4" align="end">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-sm">{t('wageCalculator', language)}</h4>
-                    <p className="text-xs text-muted-foreground">
-                      {t('wageCalculatorDescription', language)}
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="hourly-wage" className="text-xs">{t('hourlyWage', language)}</Label>
-                      <div className="relative">
-                        <div className="absolute left-3 top-1 bottom-1 flex items-center text-sm pointer-events-none z-10 text-muted-foreground">
-                          {currencyDisplay}
+              </DialogTrigger>
+              <DialogContent className="max-w-full w-full h-full max-h-full m-0 p-0 rounded-none flex flex-col [&>button]:hidden !translate-x-0 !translate-y-0 !left-0 !top-0">
+                <DialogHeader className="px-6 py-4 border-b flex flex-row items-center justify-between">
+                  <DialogTitle>{t('salarySettings', language)}</DialogTitle>
+                  <DialogClose asChild>
+                    <Button variant="ghost" size="icon" className="h-6 w-6">
+                      <X className="h-4 w-4" />
+                      <span className="sr-only">Close</span>
+                    </Button>
+                  </DialogClose>
+                </DialogHeader>
+                <div className="flex-1 overflow-auto p-6">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">{t('wageCalculator', language)}</h4>
+                      <p className="text-xs text-muted-foreground">
+                        {t('wageCalculatorDescription', language)}
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="hourly-wage" className="text-xs">{t('hourlyWage', language)}</Label>
+                        <div className="relative">
+                          <div className="absolute left-3 top-1 bottom-1 flex items-center text-sm pointer-events-none z-10 text-muted-foreground">
+                            {currencyDisplay}
+                          </div>
+                          <Input
+                            id="hourly-wage"
+                            type="text"
+                            placeholder="0"
+                            value={hourlyWage}
+                            onChange={(e) => {
+                              const value = e.target.value
+                              const digitsOnly = value.replace(/\D/g, '')
+                              if (digitsOnly) {
+                                setHourlyWage(formatNumber(digitsOnly, currency))
+                              } else {
+                                setHourlyWage('')
+                              }
+                            }}
+                            className="pl-10 h-8 text-sm"
+                            inputMode="numeric"
+                          />
                         </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="hours-per-week" className="text-xs">{t('hoursPerWeek', language)}</Label>
                         <Input
-                          id="hourly-wage"
-                          type="text"
-                          placeholder="0"
-                          value={hourlyWage}
-                          onChange={(e) => {
-                            const value = e.target.value
-                            const digitsOnly = value.replace(/\D/g, '')
-                            if (digitsOnly) {
-                              setHourlyWage(formatNumber(digitsOnly, currency))
-                            } else {
-                              setHourlyWage('')
-                            }
-                          }}
-                          className="pl-10 h-8 text-sm"
-                          inputMode="numeric"
+                          id="hours-per-week"
+                          type="number"
+                          placeholder="40"
+                          value={hoursPerWeek}
+                          onChange={(e) => setHoursPerWeek(e.target.value)}
+                          className="h-8 text-sm"
+                          min="1"
+                          max="168"
                         />
                       </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="annual-salary" className="text-xs">{t('annualSalary', language)}</Label>
+                        <div className="relative">
+                          <div className="absolute left-3 top-1 bottom-1 flex items-center text-sm pointer-events-none z-10 text-muted-foreground">
+                            {currencyDisplay}
+                          </div>
+                          <Input
+                            id="annual-salary"
+                            type="text"
+                            placeholder="0"
+                            value={(() => {
+                              const hourly = parseFormattedNumber(hourlyWage, currency)
+                              const hours = parseFloat(hoursPerWeek) || 0
+                              if (hourly > 0 && hours > 0) {
+                                // Annual = hourly * hours per week * 52 weeks
+                                const annual = hourly * hours * 52
+                                const centsValue = Math.round(annual * 100).toString()
+                                return formatNumber(centsValue, currency)
+                              }
+                              return ''
+                            })()}
+                            readOnly
+                            className="pl-10 h-8 text-sm bg-muted"
+                          />
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="space-y-1.5">
-                      <Label htmlFor="hours-per-week" className="text-xs">{t('hoursPerWeek', language)}</Label>
-                      <Input
-                        id="hours-per-week"
-                        type="number"
-                        placeholder="40"
-                        value={hoursPerWeek}
-                        onChange={(e) => setHoursPerWeek(e.target.value)}
-                        className="h-8 text-sm"
-                        min="1"
-                        max="168"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="annual-salary" className="text-xs">{t('annualSalary', language)}</Label>
-                      <div className="relative">
-                        <div className="absolute left-3 top-1 bottom-1 flex items-center text-sm pointer-events-none z-10 text-muted-foreground">
-                          {currencyDisplay}
+                    <div className="space-y-2 pt-2 border-t">
+                      <h5 className="font-medium text-xs">{t('yourWageAs', language)}</h5>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">{t('daily', language)}</Label>
+                          <div className="text-sm font-medium">
+                            {(() => {
+                              const hourly = parseFormattedNumber(hourlyWage, currency)
+                              const hours = parseFloat(hoursPerWeek) || 0
+                              if (hourly > 0 && hours > 0) {
+                                // Daily = hourly * (hours per week / 5 days)
+                                const daily = hourly * (hours / 5)
+                                const centsValue = Math.round(daily * 100).toString()
+                                return `${currencyDisplay} ${formatNumber(centsValue, currency)}`
+                              }
+                              return '-'
+                            })()}
+                          </div>
                         </div>
-                        <Input
-                          id="annual-salary"
-                          type="text"
-                          placeholder="0"
-                          value={(() => {
-                            const hourly = parseFormattedNumber(hourlyWage, currency)
-                            const hours = parseFloat(hoursPerWeek) || 0
-                            if (hourly > 0 && hours > 0) {
-                              // Annual = hourly * hours per week * 52 weeks
-                              const annual = hourly * hours * 52
-                              const centsValue = Math.round(annual * 100).toString()
-                              return formatNumber(centsValue, currency)
-                            }
-                            return ''
-                          })()}
-                          readOnly
-                          className="pl-10 h-8 text-sm bg-muted"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 pt-2 border-t">
-                    <h5 className="font-medium text-xs">{t('yourWageAs', language)}</h5>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">{t('daily', language)}</Label>
-                        <div className="text-sm font-medium">
-                          {(() => {
-                            const hourly = parseFormattedNumber(hourlyWage, currency)
-                            const hours = parseFloat(hoursPerWeek) || 0
-                            if (hourly > 0 && hours > 0) {
-                              // Daily = hourly * (hours per week / 5 days)
-                              const daily = hourly * (hours / 5)
-                              const centsValue = Math.round(daily * 100).toString()
-                              return `${currencyDisplay} ${formatNumber(centsValue, currency)}`
-                            }
-                            return '-'
-                          })()}
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">{t('monthly', language)}</Label>
+                          <div className="text-sm font-medium">
+                            {(() => {
+                              const hourly = parseFormattedNumber(hourlyWage, currency)
+                              const hours = parseFloat(hoursPerWeek) || 0
+                              if (hourly > 0 && hours > 0) {
+                                // Monthly = hourly * hours per week * (52/12 weeks)
+                                const monthly = hourly * hours * (52 / 12)
+                                const centsValue = Math.round(monthly * 100).toString()
+                                return `${currencyDisplay} ${formatNumber(centsValue, currency)}`
+                              }
+                              return '-'
+                            })()}
+                          </div>
                         </div>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">{t('monthly', language)}</Label>
-                        <div className="text-sm font-medium">
-                          {(() => {
-                            const hourly = parseFormattedNumber(hourlyWage, currency)
-                            const hours = parseFloat(hoursPerWeek) || 0
-                            if (hourly > 0 && hours > 0) {
-                              // Monthly = hourly * hours per week * (52/12 weeks)
-                              const monthly = hourly * hours * (52 / 12)
-                              const centsValue = Math.round(monthly * 100).toString()
-                              return `${currencyDisplay} ${formatNumber(centsValue, currency)}`
-                            }
-                            return '-'
-                          })()}
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">{t('weekly', language)}</Label>
+                          <div className="text-sm font-medium">
+                            {(() => {
+                              const hourly = parseFormattedNumber(hourlyWage, currency)
+                              const hours = parseFloat(hoursPerWeek) || 0
+                              if (hourly > 0 && hours > 0) {
+                                // Weekly = hourly * hours per week
+                                const weekly = hourly * hours
+                                const centsValue = Math.round(weekly * 100).toString()
+                                return `${currencyDisplay} ${formatNumber(centsValue, currency)}`
+                              }
+                              return '-'
+                            })()}
+                          </div>
                         </div>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">{t('weekly', language)}</Label>
-                        <div className="text-sm font-medium">
-                          {(() => {
-                            const hourly = parseFormattedNumber(hourlyWage, currency)
-                            const hours = parseFloat(hoursPerWeek) || 0
-                            if (hourly > 0 && hours > 0) {
-                              // Weekly = hourly * hours per week
-                              const weekly = hourly * hours
-                              const centsValue = Math.round(weekly * 100).toString()
-                              return `${currencyDisplay} ${formatNumber(centsValue, currency)}`
-                            }
-                            return '-'
-                          })()}
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">{t('biweekly', language)}</Label>
-                        <div className="text-sm font-medium">
-                          {(() => {
-                            const hourly = parseFormattedNumber(hourlyWage, currency)
-                            const hours = parseFloat(hoursPerWeek) || 0
-                            if (hourly > 0 && hours > 0) {
-                              // Biweekly = hourly * hours per week * 2
-                              const biweekly = hourly * hours * 2
-                              const centsValue = Math.round(biweekly * 100).toString()
-                              return `${currencyDisplay} ${formatNumber(centsValue, currency)}`
-                            }
-                            return '-'
-                          })()}
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">{t('biweekly', language)}</Label>
+                          <div className="text-sm font-medium">
+                            {(() => {
+                              const hourly = parseFormattedNumber(hourlyWage, currency)
+                              const hours = parseFloat(hoursPerWeek) || 0
+                              if (hourly > 0 && hours > 0) {
+                                // Biweekly = hourly * hours per week * 2
+                                const biweekly = hourly * hours * 2
+                                const centsValue = Math.round(biweekly * 100).toString()
+                                return `${currencyDisplay} ${formatNumber(centsValue, currency)}`
+                              }
+                              return '-'
+                            })()}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </PopoverContent>
-            </Popover>
+              </DialogContent>
+            </Dialog>
           </div>
           {error.field === 'salary' && (
             <p className="text-sm text-destructive">{error.message}</p>
