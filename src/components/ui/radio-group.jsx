@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 import { DotFilledIcon } from "@radix-ui/react-icons"
 
 const RadioGroup = React.forwardRef(({ className, ...props }, ref) => {
-  return (<RadioGroupPrimitive.Root className={cn("grid gap-2", className)} {...props} ref={ref} />);
+  return (<RadioGroupPrimitive.Root className={cn("grid", className)} {...props} ref={ref} />);
 })
 RadioGroup.displayName = RadioGroupPrimitive.Root.displayName
 
