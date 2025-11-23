@@ -215,7 +215,58 @@ function isInsideProcessedElement(node) {
   return false;
 }
 
+// Track processed OLX price elements
+const processedOLXElements = new WeakSet();
+
+function scanOLXPriceElements(rootNode) {
+  // Check if we're on an OLX domain
+  const currentDomain = getDomainFromUrl(window.location.href);
+  if (!currentDomain.includes('olx')) {
+    return;
+  }
+
+  // Find all OLX price divs with the specific classes
+  const olxPriceElements = rootNode.querySelectorAll('div.typo-body-large.olx-adcard__price.font-semibold');
+  
+  olxPriceElements.forEach(element => {
+    // Skip if already processed
+    if (processedOLXElements.has(element)) return;
+    
+    // Skip if inside an element we created
+    if (isInsideProcessedElement(element)) return;
+    
+    // Get the text content
+    const text = element.textContent || element.innerText;
+    
+    // Check if text contains a price
+    if (text && text.trim() && new RegExp(PRICE_REGEX).test(text)) {
+      // Mark as processed
+      processedOLXElements.add(element);
+      
+      // Find text nodes within this element and process them
+      const walker = document.createTreeWalker(
+        element,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+      );
+      
+      let textNode;
+      while (textNode = walker.nextNode()) {
+        if (!processedTextNodes.has(textNode) && !isInsideProcessedElement(textNode)) {
+          processedTextNodes.add(textNode);
+          processNode(textNode);
+        }
+      }
+    }
+  });
+}
+
 function scanAndConvert(rootNode) {
+  // First, scan for OLX-specific price elements
+  scanOLXPriceElements(rootNode);
+  
+  // Then do general text node scanning
   // TreeWalker is efficient for finding text nodes
   const walker = document.createTreeWalker(
     rootNode,
