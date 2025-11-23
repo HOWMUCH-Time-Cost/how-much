@@ -166,10 +166,7 @@ function init() {
         if (node.nodeType === 1 && node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE') {
           // Skip if inside our created elements
           if (!isInsideProcessedElement(node)) {
-            // Skip OLX elements that are already processed
-            if (!node.hasAttribute || !processedOLXElements.has(node)) {
-              nodesToProcess.push(node);
-            }
+            nodesToProcess.push(node);
           }
         }
       });
@@ -249,6 +246,8 @@ function loadGoogleFont(fontFamily, fontWeight) {
 
 // Track processed text nodes to avoid reprocessing
 const processedTextNodes = new WeakSet();
+// Track processed Amazon price elements to avoid reprocessing
+const processedAmazonPrices = new WeakSet();
 
 // Helper function to check if a node or any of its ancestors is inside an element we created
 function isInsideProcessedElement(node) {
@@ -263,141 +262,233 @@ function isInsideProcessedElement(node) {
   return false;
 }
 
-// Track processed OLX price elements
-const processedOLXElements = new WeakSet();
-
-function isStrikethrough(element) {
-  // Check if element or any ancestor has strikethrough styling
-  let current = element;
-  while (current && current !== document.body) {
-    const style = window.getComputedStyle(current);
-    if (style.textDecoration.includes('line-through') || 
-        style.textDecorationLine === 'line-through' ||
-        current.tagName === 'S' || 
-        current.tagName === 'STRIKE' ||
-        current.tagName === 'DEL') {
-      return true;
+// Function to extract price from Amazon price element structure
+function extractAmazonPrice(priceElement) {
+  // First, try to get the full price from a-offscreen span (most reliable)
+  const offscreenSpan = priceElement.querySelector('.a-offscreen');
+  if (offscreenSpan) {
+    const offscreenText = offscreenSpan.textContent.trim();
+    if (offscreenText && new RegExp(PRICE_REGEX).test(offscreenText)) {
+      return offscreenText;
     }
-    current = current.parentElement;
   }
-  return false;
-}
-
-function isOldPriceElement(element) {
-  // Check if element has old price classes
-  if (element.classList.contains('olx-text--body-medium')) {
-    return true;
-  }
-  // Check if any ancestor has old price classes
-  let current = element.parentElement;
-  while (current && current !== document.body) {
-    if (current.classList && current.classList.contains('olx-text--body-medium')) {
-      return true;
-    }
-    current = current.parentElement;
-  }
-  return false;
-}
-
-function scanOLXPriceElements(rootNode) {
-  // Check if we're on an OLX domain
-  const currentDomain = getDomainFromUrl(window.location.href);
-  if (!currentDomain.includes('olx')) {
-    return;
-  }
-
-  // Only target the current price - skip old prices
-  // Priority: current price (title-medium) only
-  const selectors = [
-    'span.olx-text--title-medium', // Current price (larger, bold) - PRIMARY
-    'div.typo-body-large.olx-adcard__price.font-semibold', // Fallback selector
-  ];
   
-  selectors.forEach((selector) => {
-    const olxPriceElements = rootNode.querySelectorAll(selector);
+  // If no offscreen, reconstruct from visible elements
+  const symbolSpan = priceElement.querySelector('.a-price-symbol');
+  const wholeSpan = priceElement.querySelector('.a-price-whole');
+  const decimalSpan = priceElement.querySelector('.a-price-decimal');
+  const fractionSpan = priceElement.querySelector('.a-price-fraction');
+  
+  if (symbolSpan && wholeSpan) {
+    let priceText = symbolSpan.textContent.trim();
+    priceText += wholeSpan.textContent.trim();
     
-    olxPriceElements.forEach(element => {
-      // Skip if already processed
-      if (processedOLXElements.has(element)) return;
+    if (decimalSpan) {
+      priceText += decimalSpan.textContent.trim();
+    }
+    
+    if (fractionSpan) {
+      priceText += fractionSpan.textContent.trim();
+    }
+    
+    if (priceText && new RegExp(PRICE_REGEX).test(priceText)) {
+      return priceText;
+    }
+  }
+  
+  return null;
+}
+
+// Function to process Amazon price elements
+function processAmazonPrices(rootNode) {
+  // Find all Amazon price containers
+  const priceContainers = rootNode.querySelectorAll('.a-price:not([data-timecost-processed])');
+  
+  priceContainers.forEach(container => {
+    // Skip if already processed or inside our created elements
+    if (processedAmazonPrices.has(container) || isInsideProcessedElement(container)) {
+      return;
+    }
+    
+    // Mark as processed
+    processedAmazonPrices.add(container);
+    container.setAttribute('data-timecost-processed', 'true');
+    
+    // Extract the full price text
+    const priceText = extractAmazonPrice(container);
+    if (!priceText) {
+      return;
+    }
+    
+    // Process the price using the existing processNode logic
+    // Create a temporary text node to reuse existing processing logic
+    const tempTextNode = document.createTextNode(priceText);
+    const processedMatches = [];
+    
+    // Use the same regex matching logic from processNode
+    const regex = new RegExp(PRICE_REGEX);
+    let match;
+    while ((match = regex.exec(priceText)) !== null) {
+      const matchData = {
+        match: match[0],
+        index: match.index,
+        length: match[0].length
+      };
       
-      // Skip if inside an element we created
-      if (isInsideProcessedElement(element)) return;
-      
-      // Skip old/strikethrough prices completely
-      if (isStrikethrough(element)) {
-        return; // Skip this element
-      }
-      
-      // Skip if this is a body-medium element (old price) - only process title-medium
-      if (isOldPriceElement(element)) {
-        return; // Skip old price elements
-      }
-      
-      // Get the text content
-      const text = element.textContent || element.innerText;
-      
-      // Check if text contains a price
-      if (text && text.trim() && new RegExp(PRICE_REGEX).test(text)) {
-        // Mark as processed BEFORE processing to prevent duplicates
-        processedOLXElements.add(element);
+      // Process the match (reuse logic from processNode)
+      try {
+        // 1. Identify currency
+        let detectedCurrency = 'USD';
+        if (match[0].includes('R$') || match[0].includes('BRL')) detectedCurrency = 'BRL';
+        else if (match[0].includes('€') || match[0].includes('EUR')) detectedCurrency = 'EUR';
         
-        // Mark all text nodes in this element as processed to prevent general scan from processing them
-        const walker = document.createTreeWalker(
-          element,
-          NodeFilter.SHOW_TEXT,
-          null,
-          false
-        );
+        // 2. Clean the string
+        let cleanString = match[0].replace(/[^\d.,]/g, '').trim();
         
-        let textNode;
-        const textNodesToProcess = [];
-        while (textNode = walker.nextNode()) {
-          // Skip if already processed
-          if (processedTextNodes.has(textNode)) continue;
-          
-          // Skip if inside an element we created
-          if (isInsideProcessedElement(textNode)) continue;
-          
-          // Skip if text node is inside a strikethrough element
-          if (isStrikethrough(textNode.parentElement)) continue;
-          
-          // Skip if text node is inside an old price element
-          if (isOldPriceElement(textNode.parentElement)) continue;
-          
-          const nodeText = textNode.nodeValue;
-          if (nodeText && nodeText.trim() && new RegExp(PRICE_REGEX).test(nodeText)) {
-            // Mark as processed immediately to prevent duplicates
-            processedTextNodes.add(textNode);
-            textNodesToProcess.push(textNode);
+        // 3. Detect format (same logic as processNode)
+        let isUSDFormat = false;
+        const usdPattern = /,\d{3}\./;
+        const brlPattern = /\.\d{3},/;
+        
+        if (usdPattern.test(cleanString)) {
+          isUSDFormat = true;
+        } else if (brlPattern.test(cleanString)) {
+          isUSDFormat = false;
+        } else if (cleanString.includes('.') && cleanString.includes(',')) {
+          const dotIndex = cleanString.lastIndexOf('.');
+          const commaIndex = cleanString.lastIndexOf(',');
+          isUSDFormat = dotIndex > commaIndex;
+        } else if (cleanString.includes('.')) {
+          const parts = cleanString.split('.');
+          const lastPart = parts[parts.length - 1];
+          if (parts.length === 2 && lastPart.length <= 2) {
+            isUSDFormat = true;
+          } else if (parts.length > 2 || lastPart.length === 3) {
+            isUSDFormat = false;
+          } else {
+            isUSDFormat = (lastPart.length <= 2);
+          }
+        } else if (cleanString.includes(',')) {
+          const parts = cleanString.split(',');
+          const lastPart = parts[parts.length - 1];
+          isUSDFormat = (lastPart.length === 3 && parts.length > 1);
+        } else {
+          isUSDFormat = (detectedCurrency === 'USD');
+        }
+        
+        // 4. Parse based on format
+        let priceValue = 0;
+        if (isUSDFormat) {
+          if (cleanString.includes('.')) {
+            cleanString = cleanString.replace(/,/g, '');
+          } else if (cleanString.includes(',')) {
+            cleanString = cleanString.replace(/,/g, '');
+          }
+        } else {
+          if (cleanString.includes(',')) {
+            cleanString = cleanString.replace(/\./g, '').replace(',', '.');
+          } else if (cleanString.includes('.')) {
+            const parts = cleanString.split('.');
+            const lastPart = parts[parts.length - 1];
+            if (parts.length > 2) {
+              cleanString = cleanString.replace(/\./g, '');
+            } else if (lastPart.length === 3) {
+              cleanString = cleanString.replace(/\./g, '');
+            } else if (lastPart.length <= 2) {
+              // Keep as is
+            } else {
+              cleanString = cleanString.replace(/\./g, '');
+            }
           }
         }
         
-        // Process all collected text nodes
-        textNodesToProcess.forEach(node => {
-          processNode(node);
+        priceValue = parseFloat(cleanString);
+        if (isNaN(priceValue) || priceValue === 0) return;
+        
+        // 5. Calculate time cost
+        const priceInUSD = priceValue / EXCHANGE_RATES[detectedCurrency];
+        const salaryInUSD = userSalary / EXCHANGE_RATES[userCurrency];
+        const dailyWageInUSD = salaryInUSD / 22;
+        const daysCost = priceInUSD / dailyWageInUSD;
+        const totalHours = daysCost * 8;
+        
+        let daysString = "";
+        if (totalHours < 1) {
+          const minutes = Math.round(totalHours * 60);
+          daysString = `${minutes}m`;
+        } else {
+          const decimalHours = Math.round(totalHours * 10) / 10;
+          daysString = `${decimalHours}h`;
+        }
+        
+        processedMatches.push({
+          ...matchData,
+          timeCost: daysString
         });
+      } catch (e) {
+        console.error("TimeCost Error parsing Amazon price:", match[0], e);
+      }
+    }
+    
+    if (processedMatches.length === 0) {
+      return;
+    }
+    
+    // Insert the time cost display next to the price container
+    processedMatches.forEach(matchData => {
+      if (spacingMode === 'compact') {
+        // Compact mode: Replace price with time cost
+        const timeCostSpan = document.createElement('span');
+        timeCostSpan.textContent = matchData.timeCost;
+        timeCostSpan.style.cssText = `
+          display: inline-block;
+          vertical-align: middle;
+          padding: 2px 6px;
+          border-radius: 100px;
+          background-color: #dafaa2;
+          color: #000;
+          font-size: 16px;
+          font-family: 'Boldonse', sans-serif;
+          font-weight: 700;
+          line-height: 1.2;
+        `;
+        container.parentNode.replaceChild(timeCostSpan, container);
+      } else if (spacingMode === 'comfortable') {
+        // Comfortable mode: Add hover trigger to price container
+        container.style.cssText += 'position: relative; display: inline-block; cursor: pointer;';
+        container.setAttribute('data-timecost-trigger', 'true');
+        container.setAttribute('data-timecost', matchData.timeCost);
+        container.setAttribute('data-original-price', priceText);
+        container.addEventListener('mouseenter', showHoverTooltip);
+        container.addEventListener('mouseleave', hideHoverTooltip);
+      } else {
+        // Default mode: Show price + time cost side by side
+        // Add time cost as a sibling element after the price container
+        const timeCostSpan = document.createElement('span');
+        timeCostSpan.textContent = ` ${matchData.timeCost}`;
+        timeCostSpan.style.cssText = `
+          display: inline-block;
+          margin-left: 4px;
+          padding: 2px 6px;
+          border-radius: 100px;
+          background-color: #dafaa2;
+          color: #000;
+          font-size: 16px;
+          font-family: 'Boldonse', sans-serif;
+          font-weight: 700;
+          line-height: 1.2;
+          vertical-align: middle;
+        `;
+        container.parentNode.insertBefore(timeCostSpan, container.nextSibling);
       }
     });
   });
 }
 
-function isInsideProcessedOLXElement(node) {
-  // Check if node is inside a processed OLX element
-  let current = node.parentElement;
-  while (current && current !== document.body) {
-    if (processedOLXElements.has(current)) {
-      return true;
-    }
-    current = current.parentElement;
-  }
-  return false;
-}
-
 function scanAndConvert(rootNode) {
-  // First, scan for OLX-specific price elements
-  scanOLXPriceElements(rootNode);
+  // First, process Amazon price elements (they need special handling)
+  processAmazonPrices(rootNode);
   
-  // Then do general text node scanning
   // TreeWalker is efficient for finding text nodes
   const walker = document.createTreeWalker(
     rootNode,
@@ -417,14 +508,17 @@ function scanAndConvert(rootNode) {
     // Skip if text node is inside an element we created (check all ancestors)
     if (isInsideProcessedElement(node)) continue;
     
-    // Skip if text node is inside a processed OLX element (to prevent duplicates)
-    if (isInsideProcessedOLXElement(node)) continue;
-    
-    // Skip if text node is inside a strikethrough element (old price)
-    if (isStrikethrough(node.parentElement)) continue;
-    
-    // Skip if text node is inside an old price element (body-medium class)
-    if (isOldPriceElement(node.parentElement)) continue;
+    // Skip if text node is inside a processed Amazon price container
+    let current = node.parentElement;
+    let isInAmazonPrice = false;
+    while (current && current !== document.body) {
+      if (current.classList.contains('a-price') && current.hasAttribute('data-timecost-processed')) {
+        isInAmazonPrice = true;
+        break;
+      }
+      current = current.parentElement;
+    }
+    if (isInAmazonPrice) continue;
 
     const text = node.nodeValue;
     
