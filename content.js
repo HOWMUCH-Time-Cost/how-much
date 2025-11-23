@@ -615,30 +615,19 @@ function processNode(textNode) {
       const daysCost = priceInUSD / dailyWageInUSD;
 
       // Formatting the result
+      // Always use hours (no days), assuming 8h work day
+      const totalHours = daysCost * 8;
       let daysString = "";
-      if (daysCost < 1) {
-        // If less than 1 day, show hours and minutes (assuming 8h work day)
-        const totalHours = daysCost * 8;
-        const wholeHours = Math.floor(totalHours);
-        const minutes = Math.round((totalHours % 1) * 60);
-        
-        if (wholeHours === 0) {
-          // If less than 1 hour, show only minutes
-          daysString = `${minutes}m`;
-        } else {
-          // Show hours and minutes in 0h0m format
-          const hoursStr = wholeHours.toString();
-          const minutesStr = minutes.toString();
-          daysString = `${hoursStr}h${minutesStr}m`;
-        }
+      
+      if (totalHours < 1) {
+        // If less than 1 hour, show only minutes
+        const minutes = Math.round(totalHours * 60);
+        daysString = `${minutes}m`;
       } else {
-        // If 1 day or more, show days and hours in 0d0h format
-        const wholeDays = Math.floor(daysCost);
-        const remainingDays = daysCost % 1;
-        const hours = Math.round(remainingDays * 8);
-        const daysStr = wholeDays.toString();
-        const hoursStr = hours.toString();
-        daysString = `${daysStr}d${hoursStr}h`;
+        // If 1 hour or more, show decimal hours (e.g., 1.5h, 2.3h)
+        // Round to 1 decimal place
+        const decimalHours = Math.round(totalHours * 10) / 10;
+        daysString = `${decimalHours}h`;
       }
 
       return {
