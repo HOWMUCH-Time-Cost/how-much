@@ -672,6 +672,7 @@ function processNode(textNode) {
       timeCostSpan.textContent = matchData.timeCost;
       timeCostSpan.style.cssText = `
         display: inline-block;
+        vertical-align: middle;
         padding: 2px 6px;
         border-radius: 100px;
         background-color: #dafaa2;
@@ -700,7 +701,16 @@ function processNode(textNode) {
       fragment.appendChild(priceWrapper);
     } else {
       // Default mode: Show price + time cost side by side (current behavior)
-      fragment.appendChild(document.createTextNode(matchData.match));
+      // Wrap price and conversion in a container for better vertical alignment
+      const priceContainer = document.createElement('span');
+      priceContainer.style.cssText = `
+        display: inline-flex;
+        align-items: center;
+        vertical-align: middle;
+      `;
+      
+      const priceText = document.createTextNode(matchData.match);
+      priceContainer.appendChild(priceText);
       
       const timeCostSpan = document.createElement('span');
       timeCostSpan.textContent = ` ${matchData.timeCost}`;
@@ -715,7 +725,10 @@ function processNode(textNode) {
         font-family: 'Boldonse', sans-serif;
         font-weight: 700;
         line-height: 1.2;
+        vertical-align: middle;
       `;
+      priceContainer.appendChild(timeCostSpan);
+      fragment.appendChild(priceContainer);
       fragment.appendChild(timeCostSpan);
     }
     
