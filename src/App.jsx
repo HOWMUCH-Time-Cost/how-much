@@ -1888,7 +1888,15 @@ function App() {
         </DropdownMenu>
       </div>
       <div className="flex items-center mb-6">
-        <img src="./icons/logo-dark.svg" alt="How Much Logo" className="h-8" />
+        <img 
+          src={
+            typeof chrome !== 'undefined' && chrome.runtime 
+              ? chrome.runtime.getURL('icons/logo-dark.svg')
+              : '/icons/logo-dark.svg'
+          } 
+          alt="How Much Logo" 
+          className="h-8" 
+        />
       </div>
 
       <Tabs defaultValue="home" className="w-full">
@@ -1937,8 +1945,8 @@ function App() {
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-full w-full h-full max-h-full m-0 p-0 rounded-none flex flex-col [&>button]:hidden !translate-x-0 !translate-y-0 !left-0 !top-0">
-              <DialogHeader className="px-6 py-4 border-b flex flex-row items-center justify-between">
-                <DialogTitle>{t('chooseCurrency', language)}</DialogTitle>
+              <DialogHeader className="px-4 py-3 border-b flex flex-row items-center justify-between">
+                <DialogTitle style={{ fontFamily: "'Boldonse', sans-serif" }}>{t('chooseCurrency', language)}</DialogTitle>
                 <DialogClose asChild>
                   <Button variant="ghost" size="icon" className="h-6 w-6">
                     <X className="h-4 w-4" />
@@ -2006,8 +2014,8 @@ function App() {
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-full w-full h-full max-h-full m-0 p-0 rounded-none flex flex-col [&>button]:hidden !translate-x-0 !translate-y-0 !left-0 !top-0">
-                <DialogHeader className="px-6 py-4 border-b flex flex-row items-center justify-between">
-                  <DialogTitle>{t('salarySettings', language)}</DialogTitle>
+                <DialogHeader className="px-4 py-3 border-b flex flex-row items-center justify-between">
+                  <DialogTitle style={{ fontFamily: "'Boldonse', sans-serif" }}>{t('salarySettings', language)}</DialogTitle>
                   <DialogClose asChild>
                     <Button variant="ghost" size="icon" className="h-6 w-6">
                       <X className="h-4 w-4" />
