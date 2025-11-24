@@ -24,9 +24,13 @@
 
 ## Git Tagging on Main Branch
 - When pushing to `main` branch, automatically create and push a tag
-- Tag format: `beta-v{month}.{day}` (e.g., `beta-v11.24` for November 24th)
-- Month and day should be numbers without leading zeros (1-12 for month, 1-31 for day)
-- Example: If pushing to main on November 24th, create tag `beta-v11.24`
+- Tag format: `beta-v{month}.{day}` (e.g., `beta-v11.24` for November 24th, `beta-v12.05` for December 5th)
+- Month should be a number without leading zeros (1-12)
+- Day should be a two-digit number with leading zero if needed (01-31)
+- Examples: 
+  - November 24th → `beta-v11.24`
+  - December 5th → `beta-v12.05`
+  - January 3rd → `beta-v1.03`
 - Push the tag to remote along with the commits
 
 ## Project Rules
