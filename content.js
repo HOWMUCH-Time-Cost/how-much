@@ -429,11 +429,13 @@ function processAmazonPrices(rootNode) {
     }
     
     if (processedMatches.length === 0) {
+      console.log('TimeCost: No processed matches for Amazon price:', priceText);
       return;
     }
     
     // Insert the time cost display next to the price container
     processedMatches.forEach(matchData => {
+      console.log('TimeCost: Inserting conversion for Amazon price:', priceText, 'Time cost:', matchData.timeCost);
       if (spacingMode === 'compact') {
         // Compact mode: Replace price with time cost
         const timeCostSpan = document.createElement('span');
@@ -450,7 +452,9 @@ function processAmazonPrices(rootNode) {
           font-weight: 700;
           line-height: 1.2;
         `;
-        container.parentNode.replaceChild(timeCostSpan, container);
+        if (container.parentNode) {
+          container.parentNode.replaceChild(timeCostSpan, container);
+        }
       } else if (spacingMode === 'comfortable') {
         // Comfortable mode: Add hover trigger to price container
         container.style.cssText += 'position: relative; display: inline-block; cursor: pointer;';
@@ -464,6 +468,7 @@ function processAmazonPrices(rootNode) {
         // Add time cost as a sibling element after the price container
         const timeCostSpan = document.createElement('span');
         timeCostSpan.textContent = ` ${matchData.timeCost}`;
+        timeCostSpan.setAttribute('data-timecost-element', 'true');
         timeCostSpan.style.cssText = `
           display: inline-block;
           margin-left: 4px;
@@ -477,7 +482,23 @@ function processAmazonPrices(rootNode) {
           line-height: 1.2;
           vertical-align: middle;
         `;
-        container.parentNode.insertBefore(timeCostSpan, container.nextSibling);
+        // Use insertAdjacentElement which is more reliable than insertBefore
+        try {
+          if (container.parentNode) {
+            container.insertAdjacentElement('afterend', timeCostSpan);
+            console.log('TimeCost: Successfully inserted time cost element');
+          } else {
+            console.error('TimeCost: Container has no parentNode, cannot insert time cost');
+            // Fallback: try to append to container itself (though this is not ideal)
+            container.appendChild(timeCostSpan);
+          }
+        } catch (e) {
+          console.error('TimeCost: Error inserting time cost element:', e);
+          // Fallback: try appendChild to parent
+          if (container.parentNode) {
+            container.parentNode.appendChild(timeCostSpan);
+          }
+        }
       }
     });
   });
