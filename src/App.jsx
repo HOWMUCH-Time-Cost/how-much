@@ -1407,6 +1407,7 @@ const US_MONTHLY_MINIMUM_WAGE = 1256.67
 const DEFAULT_WHITELIST = [
   'google.com',
   'amazon.com',
+  'amazon.com.br',
   'amazon.co.uk',
   'amazon.de',
   'amazon.fr',
