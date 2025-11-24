@@ -10,9 +10,17 @@ export default defineConfig({
     rollupOptions: {
       input: {
         popup: resolve(__dirname, 'popup.html'),
+        content: resolve(__dirname, 'content-scripts/index.js'),
       },
       output: {
-        entryFileNames: 'popup.js',
+        entryFileNames: (chunkInfo) => {
+          // Output content script as content.js
+          if (chunkInfo.name === 'content') {
+            return 'content.js'
+          }
+          // Output popup as popup.js
+          return 'popup.js'
+        },
         chunkFileNames: '[name].js',
         assetFileNames: (assetInfo) => {
           if (assetInfo.name === 'popup.html') {

@@ -33,6 +33,7 @@ const REQUIRED_DIRS = [
 const EXCLUDE_PATTERNS = [
   'node_modules',
   'src',
+  'content-scripts', // Source files for content script (bundled into content.js)
   'dist',
   'public',
   '.git',
