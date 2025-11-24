@@ -40,7 +40,13 @@ chrome.storage.local.get(['userSalary', 'userCurrency', 'whitelist', 'spacingMod
   
   // Load whitelist (normalize all domains by removing www. and converting to lowercase)
   if (data.whitelist && Array.isArray(data.whitelist) && data.whitelist.length > 0) {
-    whitelist = data.whitelist.map(domain => normalizeDomain(domain));
+    // Merge stored whitelist with default to ensure all default domains are included
+    const normalizedStored = data.whitelist.map(domain => normalizeDomain(domain));
+    const normalizedDefault = DEFAULT_WHITELIST.map(domain => normalizeDomain(domain));
+    // Combine and deduplicate
+    whitelist = [...new Set([...normalizedDefault, ...normalizedStored])];
+    // Update storage with merged whitelist (preserving user-added domains)
+    chrome.storage.local.set({ whitelist: [...new Set([...DEFAULT_WHITELIST, ...data.whitelist])] });
   } else {
     // Use default whitelist if none is saved
     whitelist = DEFAULT_WHITELIST.map(domain => normalizeDomain(domain));
