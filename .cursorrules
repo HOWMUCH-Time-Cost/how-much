@@ -22,6 +22,13 @@
 - When only documentation changes (unless explicitly requested)
 - When changes are incomplete or broken
 
+## Git Tagging on Main Branch
+- When pushing to `main` branch, automatically create and push a tag
+- Tag format: `beta-v{month}.{day}` (e.g., `beta-v11.24` for November 24th)
+- Month and day should be numbers without leading zeros (1-12 for month, 1-31 for day)
+- Example: If pushing to main on November 24th, create tag `beta-v11.24`
+- Push the tag to remote along with the commits
+
 ## Project Rules
 
 Additional project-specific rules are organized in separate files in `.cursor/rules/`:
