@@ -13,38 +13,14 @@ import {
 const processedAmazonPrices = new WeakSet();
 
 // Function to extract price from Amazon price element structure
+// Amazon uses .a-offscreen span which contains the full price text (e.g., "R$ 4.364,10")
 function extractAmazonPrice(priceElement) {
-  // First, try to get the full price from a-offscreen span (most reliable)
   const offscreenSpan = priceElement.querySelector('.a-offscreen');
   if (offscreenSpan) {
     const offscreenText = offscreenSpan.textContent.trim();
-    // Be more lenient - if it contains a currency symbol and numbers, use it
+    // Return the price text if it contains currency and numbers
     if (offscreenText && (/(R\$|€|\$)/.test(offscreenText) && /\d/.test(offscreenText))) {
       return offscreenText;
-    }
-  }
-  
-  // If no offscreen, reconstruct from visible elements
-  const symbolSpan = priceElement.querySelector('.a-price-symbol');
-  const wholeSpan = priceElement.querySelector('.a-price-whole');
-  const decimalSpan = priceElement.querySelector('.a-price-decimal');
-  const fractionSpan = priceElement.querySelector('.a-price-fraction');
-  
-  if (symbolSpan && wholeSpan) {
-    let priceText = symbolSpan.textContent.trim();
-    priceText += wholeSpan.textContent.trim();
-    
-    if (decimalSpan) {
-      priceText += decimalSpan.textContent.trim();
-    }
-    
-    if (fractionSpan) {
-      priceText += fractionSpan.textContent.trim();
-    }
-    
-    // Be more lenient - if it contains a currency symbol and numbers, use it
-    if (priceText && (/(R\$|€|\$)/.test(priceText) && /\d/.test(priceText))) {
-      return priceText;
     }
   }
   
