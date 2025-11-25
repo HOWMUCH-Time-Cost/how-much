@@ -152,97 +152,6 @@ export function isStrikethrough(node) {
   return false;
 }
 
-// Load Google Font and inject global CSS styles
-export function loadGoogleFont(fontFamily, fontWeight) {
-  // Check if font is already loaded
-  if (document.getElementById('timecost-google-font')) return;
-  
-  // Fetch the Google Fonts CSS to get actual font file URLs
-  const fontUrl = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, '+')}:wght@${fontWeight}&display=swap`;
-  
-  fetch(fontUrl)
-    .then(response => response.text())
-    .then(cssText => {
-      // Extract font file URLs from the CSS
-      const woff2Match = cssText.match(/url\(([^)]+\.woff2[^)]*)\)/);
-      
-      if (woff2Match) {
-        const fontFileUrl = woff2Match[1].replace(/['"]/g, '');
-        
-        // Inject @font-face with the actual font file URL
-        const style = document.createElement('style');
-        style.id = 'timecost-google-font';
-        style.textContent = `
-          @font-face {
-            font-family: '${fontFamily}';
-            font-style: normal;
-            font-weight: ${fontWeight};
-            font-display: swap;
-            src: url('${fontFileUrl}') format('woff2');
-          }
-          [data-timecost-element] {
-            font-family: '${fontFamily}', sans-serif !important;
-            font-weight: ${fontWeight} !important;
-          }
-        `;
-        document.head.appendChild(style);
-        
-        // Wait for font to load
-        if (document.fonts) {
-          const fontString = `${fontWeight} 1em "${fontFamily}"`;
-          document.fonts.ready.then(() => {
-            if (document.fonts.check(fontString)) {
-              console.log('TimeCost: Boldonse font loaded successfully');
-            }
-          });
-        }
-      } else {
-        // Fallback: use link tag if we can't parse the CSS
-        console.warn('TimeCost: Could not parse font CSS, using link tag fallback');
-        const link = document.createElement('link');
-        link.id = 'timecost-google-font-link';
-        link.rel = 'stylesheet';
-        link.href = fontUrl;
-        document.head.appendChild(link);
-        
-        const style = document.createElement('style');
-        style.id = 'timecost-google-font';
-        style.textContent = `
-          [data-timecost-element] {
-            font-family: '${fontFamily}', sans-serif !important;
-            font-weight: ${fontWeight} !important;
-          }
-        `;
-        document.head.appendChild(style);
-      }
-    })
-    .catch(error => {
-      console.error('TimeCost: Failed to fetch font CSS:', error);
-      // Fallback: use link tag
-      const link = document.createElement('link');
-      link.id = 'timecost-google-font-link';
-      link.rel = 'stylesheet';
-      link.href = fontUrl;
-      document.head.appendChild(link);
-      
-      const style = document.createElement('style');
-      style.id = 'timecost-google-font';
-      style.textContent = `
-        [data-timecost-element] {
-          font-family: '${fontFamily}', sans-serif !important;
-          font-weight: ${fontWeight} !important;
-        }
-      `;
-      document.head.appendChild(style);
-    });
-}
-
-// Inject global CSS styles for time cost elements (now combined with font loading)
-export function injectTimeCostStyles() {
-  // Styles are now injected together with font loading, so this is a no-op
-  // Kept for backwards compatibility
-}
-
 // Parse price string to numeric value
 export function parsePriceString(priceString, detectedCurrency) {
   // 1. Identify currency
@@ -360,7 +269,6 @@ export function createTimeCostElement(timeCost, spacingMode) {
     background-color: #dafaa2;
     color: #000;
     font-size: 16px;
-    font-family: 'Boldonse', sans-serif;
     font-weight: 700;
     line-height: 1.2;
     vertical-align: middle;
@@ -400,7 +308,6 @@ export function showHoverTooltip(event) {
         background-color: #dafaa2;
         color: #000;
         font-size: 14px;
-        font-family: 'Boldonse', sans-serif;
         font-weight: 700;
         line-height: 1.2;
       ">

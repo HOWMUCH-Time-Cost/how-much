@@ -3,6 +3,7 @@
 import {
   PRICE_REGEX,
   isInsideProcessedElement,
+  isStrikethrough,
   parsePriceString,
   calculateTimeCost,
   showHoverTooltip,
@@ -55,6 +56,11 @@ function processNode(textNode, userSalary, userCurrency, spacingMode) {
   
   if (processedMatches.length === 0) return;
   
+  // Skip entire text node if it's inside strikethrough styling
+  if (isStrikethrough(textNode)) {
+    return;
+  }
+  
   // Create a document fragment to build the new content
   const fragment = document.createDocumentFragment();
   let lastIndex = 0;
@@ -71,14 +77,15 @@ function processNode(textNode, userSalary, userCurrency, spacingMode) {
       const timeCostSpan = document.createElement('span');
       timeCostSpan.textContent = matchData.timeCost;
       timeCostSpan.style.cssText = `
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         vertical-align: middle;
         padding: 2px 6px;
         border-radius: 100px;
         background-color: #dafaa2;
         color: #000;
         font-size: 16px;
-        font-family: 'Boldonse', sans-serif;
         font-weight: 700;
         line-height: 1.2;
       `;
@@ -112,14 +119,14 @@ function processNode(textNode, userSalary, userCurrency, spacingMode) {
       const timeCostSpan = document.createElement('span');
       timeCostSpan.textContent = ` ${matchData.timeCost}`;
       timeCostSpan.style.cssText = `
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
         margin-left: 4px;
         padding: 2px 6px;
         border-radius: 100px;
         background-color: #dafaa2;
         color: #000;
         font-size: 16px;
-        font-family: 'Boldonse', sans-serif;
         font-weight: 700;
         line-height: 1.2;
       `;
@@ -166,6 +173,9 @@ export function scanAndConvert(rootNode, userSalary, userCurrency, spacingMode, 
     
     // Skip if text node is inside an element we created (check all ancestors)
     if (isInsideProcessedElement(node)) continue;
+    
+    // Skip if text node is inside strikethrough styling
+    if (isStrikethrough(node)) continue;
     
     // Apply custom skip filter if provided (e.g., skip nodes inside processed Amazon price containers)
     if (skipFilter && skipFilter(node)) continue;

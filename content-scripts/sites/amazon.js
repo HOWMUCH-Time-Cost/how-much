@@ -3,6 +3,7 @@
 import {
   PRICE_REGEX,
   isInsideProcessedElement,
+  isStrikethrough,
   parsePriceString,
   calculateTimeCost,
   showHoverTooltip,
@@ -27,6 +28,19 @@ function extractAmazonPrice(priceElement) {
   return null;
 }
 
+// Check if an element or any of its ancestors has Amazon's strikethrough attribute
+function hasAmazonStrikethrough(element) {
+  let current = element;
+  while (current && current !== document.body) {
+    if (current.hasAttribute && current.hasAttribute('data-a-strike') && 
+        current.getAttribute('data-a-strike') === 'true') {
+      return true;
+    }
+    current = current.parentElement;
+  }
+  return false;
+}
+
 // Function to process Amazon price elements
 export function processAmazonPrices(rootNode, userSalary, userCurrency, spacingMode) {
   // Find all Amazon price containers
@@ -35,6 +49,17 @@ export function processAmazonPrices(rootNode, userSalary, userCurrency, spacingM
   priceContainers.forEach(container => {
     // Skip if already processed or inside our created elements
     if (processedAmazonPrices.has(container) || isInsideProcessedElement(container)) {
+      return;
+    }
+    
+    // Skip if price is strikethrough/slashed
+    // Check for Amazon-specific strikethrough attribute (on element or parent)
+    if (hasAmazonStrikethrough(container)) {
+      return;
+    }
+    
+    // Also check for general strikethrough styling
+    if (isStrikethrough(container)) {
       return;
     }
     
@@ -71,14 +96,15 @@ export function processAmazonPrices(rootNode, userSalary, userCurrency, spacingM
         const timeCostSpan = document.createElement('span');
         timeCostSpan.textContent = timeCost;
         timeCostSpan.style.cssText = `
-          display: inline-block;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
           vertical-align: middle;
           padding: 2px 6px;
           border-radius: 100px;
           background-color: #dafaa2;
           color: #000;
           font-size: 16px;
-          font-family: 'Boldonse', sans-serif;
           font-weight: 700;
           line-height: 1.2;
         `;
@@ -95,37 +121,39 @@ export function processAmazonPrices(rootNode, userSalary, userCurrency, spacingM
         container.addEventListener('mouseleave', hideHoverTooltip);
       } else {
         // Default mode: Show price + time cost side by side
+        // Wrap both elements in a flex container for proper center alignment
+        const wrapper = document.createElement('span');
+        wrapper.style.cssText = 'display: inline-flex; align-items: center; vertical-align: middle;';
+        wrapper.setAttribute('data-timecost-wrapper', 'true');
+        
+        // Move the container into the wrapper (preserves all properties and event listeners)
+        const parent = container.parentNode;
+        if (parent) {
+          // Insert wrapper before container
+          parent.insertBefore(wrapper, container);
+          // Move container into wrapper
+          wrapper.appendChild(container);
+        } else {
+          // Fallback: if no parent, just append to container
+          container.appendChild(wrapper);
+        }
+        
         const timeCostSpan = document.createElement('span');
         timeCostSpan.textContent = ` ${timeCost}`;
         timeCostSpan.setAttribute('data-timecost-element', 'true');
         timeCostSpan.style.cssText = `
-          display: inline-block;
+          display: inline-flex;
+          align-items: center;
           margin-left: 4px;
           padding: 2px 6px;
           border-radius: 100px;
           background-color: #dafaa2;
           color: #000;
           font-size: 16px;
-          font-family: 'Boldonse', sans-serif;
           font-weight: 700;
           line-height: 1.2;
-          vertical-align: middle;
         `;
-        // Use insertAdjacentElement which is more reliable than insertBefore
-        try {
-          if (container.parentNode) {
-            container.insertAdjacentElement('afterend', timeCostSpan);
-          } else {
-            // Fallback: try to append to container itself (though this is not ideal)
-            container.appendChild(timeCostSpan);
-          }
-        } catch (e) {
-          console.error('TimeCost: Error inserting time cost element:', e);
-          // Fallback: try appendChild to parent
-          if (container.parentNode) {
-            container.parentNode.appendChild(timeCostSpan);
-          }
-        }
+        wrapper.appendChild(timeCostSpan);
       }
     } catch (e) {
       console.error("TimeCost Error parsing Amazon price:", priceText, e);
