@@ -1941,18 +1941,21 @@ function App() {
                 variant="outline"
                 role="combobox"
                 aria-expanded={currencyDialogOpen}
-                aria-label={selectedCurrency ? `${t('chooseCurrency', language)}: ${selectedCurrency.displayText}` : t('chooseCurrency', language)}
+                aria-label={selectedCurrency ? `${t('chooseCurrency', language)}: ${selectedCurrency.code} ${selectedCurrency.symbol}` : t('chooseCurrency', language)}
                 className={cn(
-                  "w-full justify-between",
+                  "w-full justify-start",
                   error.field === 'currency' && 'border-destructive'
                 )}
               >
                 {selectedCurrency ? (
-                  <span className="flex-1 truncate">{selectedCurrency.displayText}</span>
+                  <>
+                    <span className="text-2xl mr-2">{selectedCurrency.flag}</span>
+                    <span className="flex-1">{selectedCurrency.code} {selectedCurrency.symbol}</span>
+                  </>
                 ) : (
                   <span className="text-muted-foreground flex-1 w-full">{t('searchOrSelectCurrency', language)}</span>
                 )}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-full w-full h-full max-h-full m-0 p-0 rounded-none flex flex-col [&>button]:hidden !translate-x-0 !translate-y-0 !left-0 !top-0">
