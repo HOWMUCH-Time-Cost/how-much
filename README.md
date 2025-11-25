@@ -115,7 +115,9 @@ The extension does **not** work:
 **Content Script Debugging:**
 - Open DevTools (F12) on any webpage
 - Check the Console tab for content script logs
-- Look for messages starting with "[Time Cost]"
+- Look for messages starting with "TimeCost:" (e.g., "TimeCost: Using handler for site: amazon")
+- Site-specific handlers log their activity for easier debugging
+- Check which handler is being used: `console.log('TimeCost: Using handler for site: <site-name>')`
 
 **Popup Debugging:**
 - Right-click extension icon → "Inspect popup"
@@ -160,7 +162,7 @@ how-much/
 ├── popup.html             # Extension popup HTML
 ├── popup.js               # Built React application bundle
 ├── popup.css              # Compiled Tailwind CSS
-├── content.js             # Content script (runs on web pages)
+├── content.js             # Built content script bundle (runs on web pages)
 ├── icons/                 # Extension icons
 │   ├── icon16.png
 │   ├── icon48.png
@@ -171,10 +173,17 @@ how-much/
 │   ├── components/ui/      # shadcn/ui components
 │   ├── data/              # Currency data and translations
 │   └── lib/               # Utility functions
+├── content-scripts/       # Content script source code (modular structure)
+│   ├── base.js            # Shared utilities (price parsing, currency detection)
+│   ├── index.js           # Main entry point
+│   ├── registry.js        # Site detection and handler loading
+│   └── sites/             # Site-specific handlers
+│       ├── amazon.js      # Amazon-specific price extraction
+│       └── generic.js    # Generic handler for all other sites
 ├── public/                # Static assets
 │   └── icons/             # Public icon assets
 ├── index.html             # Dev server entry point
-├── vite.config.js         # Vite configuration
+├── vite.config.js         # Vite configuration (bundles both popup and content)
 ├── tailwind.config.js     # Tailwind CSS configuration
 └── package.json           # Dependencies and scripts
 ```
@@ -202,24 +211,46 @@ The extension uses real-time exchange rates from the [Exchange Rate API](https:/
 - Proper decimal and separator formatting
 - Locale-specific number formatting
 
+### Content Script Architecture
+
+The content script uses a **modular architecture** with site-specific handlers:
+
+- **Base Module** (`content-scripts/base.js`): Shared utilities for price parsing, currency detection, time cost calculation, and DOM manipulation
+- **Registry** (`content-scripts/registry.js`): Detects the current website and loads the appropriate handler
+- **Site Handlers** (`content-scripts/sites/`): Site-specific logic for price extraction
+  - `amazon.js`: Handles Amazon's structured price elements (`.a-price` containers)
+  - `generic.js`: Fallback handler for text-based price detection on all other sites
+
+**Benefits:**
+- Easy to add new site-specific handlers
+- Better organization and maintainability
+- Isolated debugging per site
+- Shared utilities reduce code duplication
+
 ### Price Detection Algorithm
 
 The extension uses sophisticated regex patterns to detect prices:
-1. Scans page text for currency patterns
-2. Matches various formats (symbols, ISO codes, regional formats)
-3. Extracts numeric values with proper decimal handling
-4. Converts to user's currency using exchange rates
-5. Calculates work days: `days = (price in user currency) / (daily wage)`
-6. Formats display based on amount (days vs hours/minutes)
+1. **Site Detection**: Registry identifies the current website
+2. **Handler Selection**: Loads site-specific handler (Amazon) or generic handler
+3. **Price Extraction**: 
+   - Amazon: Extracts from structured `.a-price` elements
+   - Generic: Scans page text for currency patterns
+4. **Format Matching**: Matches various formats (symbols, ISO codes, regional formats)
+5. **Value Parsing**: Extracts numeric values with proper decimal handling
+6. **Currency Conversion**: Converts to user's currency using exchange rates
+7. **Time Calculation**: Calculates work days: `days = (price in user currency) / (daily wage)`
+8. **Display Formatting**: Formats based on amount (days vs hours/minutes)
 
 ### Performance Optimizations
 
 - **Efficient DOM Traversal**: Uses `TreeWalker` API instead of recursive functions
 - **MutationObserver**: Watches for dynamic content changes
-- **Node Marking**: Prevents processing the same node twice
+- **Node Marking**: Prevents processing the same node twice (uses WeakSet)
 - **Whitelist Filtering**: Only processes pages on whitelisted domains
-- **Debounced Updates**: Prevents excessive recalculations
+- **Debounced Updates**: Prevents excessive recalculations (100ms debounce)
 - **Lazy Loading**: Currency data loaded on demand
+- **Modular Handlers**: Only loads site-specific logic when needed
+- **Shared Utilities**: Common functions bundled once, reused across handlers
 
 ### Browser Compatibility
 
@@ -247,15 +278,22 @@ npm run preview
 ```
 
 **Extension Development:**
-1. Make changes to React source files in `src/`
-2. Run `npm run build` to rebuild extension
+1. Make changes to React source files in `src/` or content script files in `content-scripts/`
+2. Run `npm run build` to rebuild extension (bundles both popup and content script)
 3. Reload extension in `chrome://extensions/`
 4. Test changes on whitelisted websites
 
 **Important Notes:**
-- Always rebuild after changing `src/` files
+- Always rebuild after changing `src/` or `content-scripts/` files
 - `popup.html` should reference `/src/main.jsx` in source, `./popup.js` in build
+- `content.js` is built from `content-scripts/index.js` and bundled with all modules
 - Check `DEVELOPMENT.md` for detailed development workflow
+
+**Adding New Site Handlers:**
+1. Create a new file in `content-scripts/sites/newsite.js`
+2. Export a `scanAndConvert(rootNode, userSalary, userCurrency, spacingMode, processedTextNodes)` function
+3. Register the site in `content-scripts/registry.js` by adding it to `SITE_HANDLERS`
+4. Rebuild with `npm run build`
 
 ---
 
