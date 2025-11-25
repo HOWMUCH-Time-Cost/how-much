@@ -7,6 +7,7 @@ import {
   getDomainFromUrl,
   normalizeDomain,
   loadGoogleFont,
+  injectTimeCostStyles,
   isInsideProcessedElement
 } from './base.js';
 import { getSiteHandler, getSiteName } from './registry.js';
@@ -68,6 +69,9 @@ chrome.storage.local.get(['userSalary', 'userCurrency', 'whitelist', 'spacingMod
 function init() {
   // Load Google Font (Boldonse)
   loadGoogleFont('Boldonse', '700');
+  
+  // Inject global CSS styles for time cost elements
+  injectTimeCostStyles();
   
   // Get the site handler for the current site
   const currentUrl = window.location.href;

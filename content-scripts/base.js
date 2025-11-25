@@ -126,6 +126,22 @@ export function loadGoogleFont(fontFamily, fontWeight) {
   document.head.appendChild(link);
 }
 
+// Inject global CSS styles for time cost elements
+export function injectTimeCostStyles() {
+  // Check if styles are already injected
+  if (document.getElementById('timecost-global-styles')) return;
+  
+  const style = document.createElement('style');
+  style.id = 'timecost-global-styles';
+  style.textContent = `
+    [data-timecost-element] {
+      font-family: 'Boldonse', sans-serif !important;
+      font-weight: 700 !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 // Parse price string to numeric value
 export function parsePriceString(priceString, detectedCurrency) {
   // 1. Identify currency
@@ -235,7 +251,8 @@ export function createTimeCostElement(timeCost, spacingMode) {
   timeCostSpan.textContent = ` ${timeCost}`;
   timeCostSpan.setAttribute('data-timecost-element', 'true');
   timeCostSpan.style.cssText = `
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     margin-left: 4px;
     padding: 2px 6px;
     border-radius: 100px;
