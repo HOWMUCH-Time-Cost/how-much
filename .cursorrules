@@ -24,15 +24,15 @@
 
 ## Git Tagging on Main Branch
 - When pushing to `main` branch, automatically create and push a tag
-- Tag format: `beta-v{month}{day}{hour}{minute}` (e.g., `beta-v11241530` for November 24th at 15:30, `beta-v12050945` for December 5th at 09:45)
+- Tag format: `beta-v{month}.{day}{hour}{minute}` (e.g., `beta-v11.241530` for November 24th at 15:30, `beta-v12.050945` for December 5th at 09:45)
 - Month should be a number without leading zeros (1-12)
 - Day should be a two-digit number with leading zero if needed (01-31)
 - Hour should be a two-digit number in 24-hour format (00-23)
 - Minute should be a two-digit number (00-59)
 - Examples: 
-  - November 24th at 3:30 PM → `beta-v11241530`
-  - December 5th at 9:45 AM → `beta-v12050945`
-  - January 3rd at 11:05 PM → `beta-v01032305`
+  - November 24th at 3:30 PM → `beta-v11.241530`
+  - December 5th at 9:45 AM → `beta-v12.050945`
+  - January 3rd at 11:05 PM → `beta-v1.032305`
 - Push the tag to remote along with the commits
 
 ## Project Rules
