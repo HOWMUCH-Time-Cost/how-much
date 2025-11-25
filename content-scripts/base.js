@@ -116,47 +116,16 @@ export function isInsideProcessedElement(node) {
   return false;
 }
 
-// Load Google Font
+// Load Google Font using @import in style tag (as per Google Fonts instructions)
 export function loadGoogleFont(fontFamily, fontWeight) {
   // Check if font is already loaded
   if (document.getElementById('timecost-google-font')) return;
   
-  // Add preconnect for better performance
-  if (!document.querySelector('link[href="https://fonts.googleapis.com"]')) {
-    const preconnectGoogle = document.createElement('link');
-    preconnectGoogle.rel = 'preconnect';
-    preconnectGoogle.href = 'https://fonts.googleapis.com';
-    document.head.appendChild(preconnectGoogle);
-  }
-  
-  if (!document.querySelector('link[href="https://fonts.gstatic.com"]')) {
-    const preconnectGstatic = document.createElement('link');
-    preconnectGstatic.rel = 'preconnect';
-    preconnectGstatic.href = 'https://fonts.gstatic.com';
-    preconnectGstatic.crossOrigin = 'anonymous';
-    document.head.appendChild(preconnectGstatic);
-  }
-  
-  // Load the font
-  const link = document.createElement('link');
-  link.id = 'timecost-google-font';
-  link.rel = 'stylesheet';
-  link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, '+')}:wght@${fontWeight}&display=swap`;
-  
-  // Wait for font to load before resolving
-  link.onload = () => {
-    // Verify font is available
-    if (document.fonts && document.fonts.check) {
-      // Font should be available now
-      console.log('TimeCost: Boldonse font loaded');
-    }
-  };
-  
-  link.onerror = () => {
-    console.error('TimeCost: Failed to load Boldonse font');
-  };
-  
-  document.head.appendChild(link);
+  // Use @import in a style tag as recommended by Google Fonts
+  const style = document.createElement('style');
+  style.id = 'timecost-google-font';
+  style.textContent = `@import url('https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, '+')}:wght@${fontWeight}&display=swap');`;
+  document.head.appendChild(style);
 }
 
 // Inject global CSS styles for time cost elements
