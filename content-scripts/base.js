@@ -157,44 +157,84 @@ export function loadGoogleFont(fontFamily, fontWeight) {
   // Check if font is already loaded
   if (document.getElementById('timecost-google-font')) return;
   
-  // Try @import method first (as recommended by Google Fonts)
-  const style = document.createElement('style');
-  style.id = 'timecost-google-font';
-  style.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, '+')}:wght@${fontWeight}&display=swap');
-    [data-timecost-element] {
-      font-family: '${fontFamily}', sans-serif !important;
-      font-weight: ${fontWeight} !important;
-    }
-  `;
-  document.head.appendChild(style);
+  // Fetch the Google Fonts CSS to get actual font file URLs
+  const fontUrl = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, '+')}:wght@${fontWeight}&display=swap`;
   
-  // Also add as link tag as fallback (some CSP policies allow link but not @import)
-  const link = document.createElement('link');
-  link.id = 'timecost-google-font-link';
-  link.rel = 'stylesheet';
-  link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, '+')}:wght@${fontWeight}&display=swap`;
-  
-  link.onload = () => {
-    // Verify font is available using Font Loading API
-    if (document.fonts && document.fonts.check) {
-      const fontString = `${fontWeight} 1em "${fontFamily}"`;
-      if (document.fonts.check(fontString)) {
-        console.log('TimeCost: Boldonse font loaded successfully');
-      } else {
-        // Wait a bit and check again (font might still be loading)
-        setTimeout(() => {
-          if (document.fonts.check(fontString)) {
-            console.log('TimeCost: Boldonse font loaded successfully (delayed)');
-          } else {
-            console.warn('TimeCost: Boldonse font may not be available');
+  fetch(fontUrl)
+    .then(response => response.text())
+    .then(cssText => {
+      // Extract font file URLs from the CSS
+      const woff2Match = cssText.match(/url\(([^)]+\.woff2[^)]*)\)/);
+      
+      if (woff2Match) {
+        const fontFileUrl = woff2Match[1].replace(/['"]/g, '');
+        
+        // Inject @font-face with the actual font file URL
+        const style = document.createElement('style');
+        style.id = 'timecost-google-font';
+        style.textContent = `
+          @font-face {
+            font-family: '${fontFamily}';
+            font-style: normal;
+            font-weight: ${fontWeight};
+            font-display: swap;
+            src: url('${fontFileUrl}') format('woff2');
           }
-        }, 500);
+          [data-timecost-element] {
+            font-family: '${fontFamily}', sans-serif !important;
+            font-weight: ${fontWeight} !important;
+          }
+        `;
+        document.head.appendChild(style);
+        
+        // Wait for font to load
+        if (document.fonts) {
+          const fontString = `${fontWeight} 1em "${fontFamily}"`;
+          document.fonts.ready.then(() => {
+            if (document.fonts.check(fontString)) {
+              console.log('TimeCost: Boldonse font loaded successfully');
+            }
+          });
+        }
+      } else {
+        // Fallback: use link tag if we can't parse the CSS
+        console.warn('TimeCost: Could not parse font CSS, using link tag fallback');
+        const link = document.createElement('link');
+        link.id = 'timecost-google-font-link';
+        link.rel = 'stylesheet';
+        link.href = fontUrl;
+        document.head.appendChild(link);
+        
+        const style = document.createElement('style');
+        style.id = 'timecost-google-font';
+        style.textContent = `
+          [data-timecost-element] {
+            font-family: '${fontFamily}', sans-serif !important;
+            font-weight: ${fontWeight} !important;
+          }
+        `;
+        document.head.appendChild(style);
       }
-    }
-  };
-  
-  document.head.appendChild(link);
+    })
+    .catch(error => {
+      console.error('TimeCost: Failed to fetch font CSS:', error);
+      // Fallback: use link tag
+      const link = document.createElement('link');
+      link.id = 'timecost-google-font-link';
+      link.rel = 'stylesheet';
+      link.href = fontUrl;
+      document.head.appendChild(link);
+      
+      const style = document.createElement('style');
+      style.id = 'timecost-google-font';
+      style.textContent = `
+        [data-timecost-element] {
+          font-family: '${fontFamily}', sans-serif !important;
+          font-weight: ${fontWeight} !important;
+        }
+      `;
+      document.head.appendChild(style);
+    });
 }
 
 // Inject global CSS styles for time cost elements (now combined with font loading)
