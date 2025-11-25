@@ -1874,7 +1874,7 @@ function App() {
       <div className="absolute top-6 right-6">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button variant="ghost" size="icon" className="h-8 w-8 bg-white/8">
               <span className="text-lg">{selectedLanguage.flag}</span>
               <span className="sr-only">{t('selectLanguage', language)}</span>
             </Button>
