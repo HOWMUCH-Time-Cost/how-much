@@ -2292,9 +2292,8 @@ function App() {
                                   e.stopPropagation()
                                   handleRemoveGroup(groupName, domains)
                                 }}
-                                size="icon"
                                 variant="ghost"
-                                className="h-6 w-6"
+                                className="!h-auto !w-auto !min-h-0 !min-w-0"
                               >
                                 <X className="h-4 w-4" />
                                 <span className="sr-only">{t('removeGroup', language)}</span>
@@ -2305,7 +2304,7 @@ function App() {
                                 {domains.sort().map((site) => (
                                   <div
                                     key={site}
-                                    className="flex items-center justify-between px-4 py-2 hover:bg-accent/50 transition-colors"
+                                    className="flex items-center justify-between px-3 min-h-12 hover:bg-accent/50 transition-colors"
                                   >
                                     <div className="flex items-center gap-2">
                                       <img
@@ -2333,7 +2332,7 @@ function App() {
                             )}
                           </>
                         ) : (
-                          <div className="flex items-center justify-between p-2 hover:bg-accent transition-colors">
+                          <div className="flex items-center justify-between px-3 min-h-12 hover:bg-accent transition-colors">
                             <div className="flex items-center gap-2">
                               <img
                                 src={getFaviconUrl(domains[0])}

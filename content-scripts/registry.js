@@ -18,7 +18,7 @@ const SITE_HANDLERS = {
 };
 
 // Get base domain from a domain string
-function getBaseDomain(domain) {
+export function getBaseDomain(domain) {
   const normalized = normalizeDomain(domain);
   const parts = normalized.split('.');
   

@@ -64,10 +64,38 @@ export function getDomainFromUrl(url) {
   }
 }
 
+// Helper function to get base domain (e.g., "amazon" from "amazon.com.br")
+function getBaseDomain(domain) {
+  const normalized = normalizeDomain(domain);
+  const parts = normalized.split('.');
+  
+  // Handle common multi-part TLDs
+  const multiPartTlds = ['co.uk', 'com.au', 'co.jp', 'com.br'];
+  for (const tld of multiPartTlds) {
+    if (normalized.endsWith('.' + tld)) {
+      const domainPart = normalized.replace('.' + tld, '');
+      return domainPart.split('.').pop() || domainPart;
+    }
+  }
+  
+  // For simple domains like "amazon.com", return "amazon"
+  if (parts.length === 2) {
+    return parts[0];
+  }
+  
+  // For domains like "www.amazon.com", return "amazon"
+  if (parts.length >= 3) {
+    return parts[parts.length - 2];
+  }
+  
+  return parts[0];
+}
+
 // Helper function to check if current domain is in whitelist
 export function isWhitelisted(domain, whitelist) {
   // Normalize domain for comparison
   const normalizedDomain = normalizeDomain(domain);
+  const currentBaseDomain = getBaseDomain(normalizedDomain);
   
   // Check if domain matches exactly
   if (whitelist.includes(normalizedDomain)) {
@@ -79,9 +107,15 @@ export function isWhitelisted(domain, whitelist) {
   // e.g., "shop.amazon.com" matches "amazon.com"
   for (const whitelistedDomain of whitelist) {
     const normalizedWhitelisted = normalizeDomain(whitelistedDomain);
+    const whitelistedBaseDomain = getBaseDomain(normalizedWhitelisted);
     
     // Exact match
     if (normalizedDomain === normalizedWhitelisted) {
+      return true;
+    }
+    
+    // Check if base domains match (e.g., "amazon.com" matches "amazon.com.br" because both have base "amazon")
+    if (currentBaseDomain === whitelistedBaseDomain && currentBaseDomain) {
       return true;
     }
     
