@@ -174,6 +174,26 @@ export function loadGoogleFont(fontFamily, fontWeight) {
   link.id = 'timecost-google-font-link';
   link.rel = 'stylesheet';
   link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, '+')}:wght@${fontWeight}&display=swap`;
+  
+  link.onload = () => {
+    // Verify font is available using Font Loading API
+    if (document.fonts && document.fonts.check) {
+      const fontString = `${fontWeight} 1em "${fontFamily}"`;
+      if (document.fonts.check(fontString)) {
+        console.log('TimeCost: Boldonse font loaded successfully');
+      } else {
+        // Wait a bit and check again (font might still be loading)
+        setTimeout(() => {
+          if (document.fonts.check(fontString)) {
+            console.log('TimeCost: Boldonse font loaded successfully (delayed)');
+          } else {
+            console.warn('TimeCost: Boldonse font may not be available');
+          }
+        }, 500);
+      }
+    }
+  };
+  
   document.head.appendChild(link);
 }
 
