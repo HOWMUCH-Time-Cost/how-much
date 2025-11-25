@@ -1950,7 +1950,7 @@ function App() {
                 {selectedCurrency ? (
                   <>
                     <span className="text-2xl mr-2">{selectedCurrency.flag}</span>
-                    <span className="flex-1">{selectedCurrency.code} {selectedCurrency.symbol}</span>
+                    <span className="flex-1 text-left">{selectedCurrency.code} {selectedCurrency.symbol}</span>
                   </>
                 ) : (
                   <span className="text-muted-foreground flex-1 w-full">{t('searchOrSelectCurrency', language)}</span>
@@ -2332,7 +2332,7 @@ function App() {
                             )}
                           </>
                         ) : (
-                          <div className="flex items-center justify-between p-2 hover:bg-accent transition-colors">
+                          <div className="flex items-center justify-between p-2 hover:bg-accent transition-colors min-h-[40px]">
                             <div className="flex items-center gap-2">
                               <img
                                 src={getFaviconUrl(domains[0])}
