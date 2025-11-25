@@ -1907,6 +1907,10 @@ function App() {
           } 
           alt="How Much Logo" 
           className="h-8" 
+          onError={(e) => {
+            console.error('Failed to load logo:', e.target.src)
+            e.target.style.display = 'none'
+          }}
         />
       </div>
 
