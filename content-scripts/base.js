@@ -116,32 +116,71 @@ export function isInsideProcessedElement(node) {
   return false;
 }
 
-// Load Google Font using @import in style tag (as per Google Fonts instructions)
+// Helper function to check if an element or text node has strikethrough styling
+export function isStrikethrough(node) {
+  // Check if node is a text node, get its parent element
+  let element = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+  
+  if (!element) return false;
+  
+  // Walk up the DOM tree to check for strikethrough
+  while (element && element !== document.body) {
+    // Check for strikethrough HTML tags
+    const tagName = element.tagName?.toLowerCase();
+    if (tagName === 's' || tagName === 'strike' || tagName === 'del') {
+      return true;
+    }
+    
+    // Check computed style for text-decoration: line-through
+    const style = window.getComputedStyle(element);
+    const textDecoration = style.textDecoration || style.textDecorationLine;
+    if (textDecoration && textDecoration.includes('line-through')) {
+      return true;
+    }
+    
+    // Check inline style
+    if (element.style.textDecoration && element.style.textDecoration.includes('line-through')) {
+      return true;
+    }
+    if (element.style.textDecorationLine && element.style.textDecorationLine.includes('line-through')) {
+      return true;
+    }
+    
+    element = element.parentElement;
+  }
+  
+  return false;
+}
+
+// Load Google Font and inject global CSS styles
 export function loadGoogleFont(fontFamily, fontWeight) {
   // Check if font is already loaded
   if (document.getElementById('timecost-google-font')) return;
   
-  // Use @import in a style tag as recommended by Google Fonts
+  // Try @import method first (as recommended by Google Fonts)
   const style = document.createElement('style');
   style.id = 'timecost-google-font';
-  style.textContent = `@import url('https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, '+')}:wght@${fontWeight}&display=swap');`;
-  document.head.appendChild(style);
-}
-
-// Inject global CSS styles for time cost elements
-export function injectTimeCostStyles() {
-  // Check if styles are already injected
-  if (document.getElementById('timecost-global-styles')) return;
-  
-  const style = document.createElement('style');
-  style.id = 'timecost-global-styles';
   style.textContent = `
+    @import url('https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, '+')}:wght@${fontWeight}&display=swap');
     [data-timecost-element] {
-      font-family: 'Boldonse', sans-serif !important;
-      font-weight: 700 !important;
+      font-family: '${fontFamily}', sans-serif !important;
+      font-weight: ${fontWeight} !important;
     }
   `;
   document.head.appendChild(style);
+  
+  // Also add as link tag as fallback (some CSP policies allow link but not @import)
+  const link = document.createElement('link');
+  link.id = 'timecost-google-font-link';
+  link.rel = 'stylesheet';
+  link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, '+')}:wght@${fontWeight}&display=swap`;
+  document.head.appendChild(link);
+}
+
+// Inject global CSS styles for time cost elements (now combined with font loading)
+export function injectTimeCostStyles() {
+  // Styles are now injected together with font loading, so this is a no-op
+  // Kept for backwards compatibility
 }
 
 // Parse price string to numeric value
