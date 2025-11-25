@@ -1986,7 +1986,8 @@ function App() {
                               currency === curr.code ? "opacity-100" : "opacity-0"
                             )}
                           />
-                          {curr.displayText}
+                          <span className="text-2xl mr-2">{curr.flag}</span>
+                          <span>{curr.code} <span className="text-white/16">•</span> {curr.symbol}</span>
                         </CommandItem>
                       ))}
                     </CommandGroup>
@@ -2022,7 +2023,7 @@ function App() {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="absolute right-1 top-1 bottom-1 h-auto w-8 text-muted-foreground hover:text-foreground"
+                  className="absolute right-1 top-1 bottom-1 !h-auto !min-h-0 w-8 text-muted-foreground hover:text-foreground"
                   aria-label={t('salarySettings', language)}
                 >
                   <Settings className="h-4 w-4" />
