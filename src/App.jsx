@@ -1941,7 +1941,7 @@ function App() {
                 variant="outline"
                 role="combobox"
                 aria-expanded={currencyDialogOpen}
-                aria-label={selectedCurrency ? `${t('chooseCurrency', language)}: ${selectedCurrency.code} ${selectedCurrency.symbol}` : t('chooseCurrency', language)}
+                aria-label={selectedCurrency ? `${t('chooseCurrency', language)}: ${selectedCurrency.code} • ${selectedCurrency.symbol}` : t('chooseCurrency', language)}
                 className={cn(
                   "w-full justify-start",
                   error.field === 'currency' && 'border-destructive'
@@ -1950,7 +1950,7 @@ function App() {
                 {selectedCurrency ? (
                   <>
                     <span className="text-2xl mr-2">{selectedCurrency.flag}</span>
-                    <span className="flex-1 text-left">{selectedCurrency.code} {selectedCurrency.symbol}</span>
+                    <span className="flex-1 text-left">{selectedCurrency.code} • {selectedCurrency.symbol}</span>
                   </>
                 ) : (
                   <span className="text-muted-foreground flex-1 w-full">{t('searchOrSelectCurrency', language)}</span>
