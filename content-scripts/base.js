@@ -4,7 +4,8 @@
 export const EXCHANGE_RATES = {
   USD: 1.0,
   EUR: 0.92,  // 1 USD = 0.92 EUR (approx)
-  BRL: 5.00   // 1 USD = 5.00 BRL (approx)
+  BRL: 5.00,  // 1 USD = 5.00 BRL (approx)
+  JPY: 150.0  // 1 USD = 150.0 JPY (approx)
 };
 
 // Currency Symbols and Formatting Rules
@@ -312,11 +313,52 @@ export function createTimeCostElement(timeCost, spacingMode) {
 
 // Hover tooltip management for comfortable mode
 let currentTooltip = null;
+let globalUserSalary = null;
+let globalUserCurrency = 'USD';
+
+export function setTooltipUserData(salary, currency) {
+  globalUserSalary = salary;
+  globalUserCurrency = currency;
+}
+
+// Format number with proper separators
+function formatCurrency(value, currency) {
+  if (currency === 'JPY') {
+    // Japanese Yen: no decimals, use dots as thousands separator
+    return Math.round(value).toLocaleString('en-US').replace(/,/g, '.');
+  } else if (currency === 'BRL' || currency === 'EUR') {
+    // European/Brazilian format: 1.234,56
+    return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  } else {
+    // US format: 1,234.56
+    return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+}
 
 export function showHoverTooltip(event) {
   const trigger = event.currentTarget;
   const timeCost = trigger.getAttribute('data-timecost');
   const originalPrice = trigger.getAttribute('data-original-price');
+  
+  // Parse the original price to get value and currency
+  const { price: priceValue, currency: priceCurrency } = parsePriceString(originalPrice);
+  
+  if (!priceValue || !globalUserSalary) {
+    return; // Can't show conversions without price or user data
+  }
+  
+  // Convert price to USD first
+  const priceInUSD = priceValue / EXCHANGE_RATES[priceCurrency];
+  
+  // Convert to target currencies
+  const jpyValue = priceInUSD * EXCHANGE_RATES.JPY;
+  const brlValue = priceInUSD * EXCHANGE_RATES.BRL;
+  const eurValue = priceInUSD * EXCHANGE_RATES.EUR;
+  
+  // Format values
+  const jpyFormatted = formatCurrency(jpyValue, 'JPY');
+  const brlFormatted = formatCurrency(brlValue, 'BRL');
+  const eurFormatted = formatCurrency(eurValue, 'EUR');
   
   // Remove existing tooltip if any
   if (currentTooltip) {
@@ -328,24 +370,30 @@ export function showHoverTooltip(event) {
   tooltip.className = 'timecost-hover-tooltip';
   tooltip.setAttribute('data-timecost-tooltip', 'true');
   tooltip.innerHTML = `
-    <div style="padding: 12px;">
-      <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px; color: #000;">
-        ${originalPrice}
+    <div style="padding: 16px;">
+      <div style="font-size: 18px; font-weight: 700; margin-bottom: 12px; color: #000; font-family: sans-serif;">
+        ${timeCost.toUpperCase()}
       </div>
-      <div style="font-size: 12px; color: #000; margin-bottom: 8px;">
-        Time cost
+      <div style="height: 1px; background-color: rgba(0, 0, 0, 0.1); margin-bottom: 12px;"></div>
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #000;">
+          <span style="font-size: 16px;">🇯🇵</span>
+          <span>JPY</span>
+          <span style="margin-left: auto;">${jpyFormatted}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #000;">
+          <span style="font-size: 16px;">🇧🇷</span>
+          <span>BRL</span>
+          <span style="margin-left: auto;">${brlFormatted}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #000;">
+          <span style="font-size: 16px;">🇪🇺</span>
+          <span>EUR</span>
+          <span style="margin-left: auto;">${eurFormatted}</span>
+        </div>
       </div>
-      <div style="
-        display: inline-block;
-        padding: 4px 8px;
-        border-radius: 100px;
-        background-color: #dafaa2;
-        color: #000;
-        font-size: 14px;
-        font-weight: 700;
-        line-height: 1.2;
-      ">
-        ${timeCost}
+      <div style="text-align: center; margin-top: 8px;">
+        <span style="font-size: 12px; font-weight: 700; color: #a8d87a; font-family: 'Boldonse', sans-serif;">HOWMUCH?</span>
       </div>
     </div>
   `;
@@ -354,9 +402,8 @@ export function showHoverTooltip(event) {
   tooltip.style.cssText = `
     position: absolute;
     z-index: 999999;
-    width: 280px;
-    border-radius: 8px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    width: 240px;
+    border-radius: 12px;
     background-color: #dafaa2;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     pointer-events: none;

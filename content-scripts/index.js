@@ -6,7 +6,8 @@ import {
   isWhitelisted,
   getDomainFromUrl,
   normalizeDomain,
-  isInsideProcessedElement
+  isInsideProcessedElement,
+  setTooltipUserData
 } from './base.js';
 import { getSiteHandler, getSiteName } from './registry.js';
 import * as genericHandler from './sites/generic.js';
@@ -31,6 +32,9 @@ chrome.storage.local.get(['userSalary', 'userCurrency', 'whitelist', 'spacingMod
     userSalary = US_MONTHLY_MINIMUM_WAGE;
     userCurrency = 'USD';
   }
+  
+  // Set tooltip user data
+  setTooltipUserData(userSalary, userCurrency);
   
   // Load spacing mode
   if (data.spacingMode && ['default', 'comfortable', 'compact'].includes(data.spacingMode)) {
@@ -108,10 +112,18 @@ function init() {
   });
   observer.observe(document.body, { childList: true, subtree: true });
   
-  // Listen for storage changes to update spacing mode dynamically
+  // Listen for storage changes to update spacing mode and user data dynamically
   chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === 'local' && changes.spacingMode) {
-      spacingMode = changes.spacingMode.newValue || 'default';
+    if (areaName === 'local') {
+      if (changes.userSalary || changes.userCurrency) {
+        const newSalary = changes.userSalary ? parseFloat(changes.userSalary.newValue) : userSalary;
+        const newCurrency = changes.userCurrency ? changes.userCurrency.newValue : userCurrency;
+        userSalary = newSalary;
+        userCurrency = newCurrency;
+        setTooltipUserData(userSalary, userCurrency);
+      }
+      if (changes.spacingMode) {
+        spacingMode = changes.spacingMode.newValue || 'default';
       // Re-process the entire page with new spacing mode
       // Use requestAnimationFrame to batch DOM operations
       requestAnimationFrame(() => {
@@ -155,6 +167,7 @@ function init() {
           scanAndConvert(document.body);
         }
       });
+      }
     }
   });
 }
