@@ -110,9 +110,9 @@ function processNode(textNode, userSalary, userCurrency, spacingMode) {
       // Create price text
       const priceText = document.createTextNode(matchData.match);
       
-      // Append icon and text
-      priceWrapper.appendChild(coinIcon);
+      // Append text first, then icon (icon on the right)
       priceWrapper.appendChild(priceText);
+      priceWrapper.appendChild(coinIcon);
       
       // Store time cost data for hover tooltip
       priceWrapper.setAttribute('data-timecost', matchData.timeCost);

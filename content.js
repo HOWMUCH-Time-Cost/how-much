@@ -48,7 +48,7 @@ const U={USD:1,EUR:.92,BRL:5},N=/((R\$|€|\$)\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d
             <circle cx="12" cy="12" r="6" fill="none" stroke="#6b9e3e" stroke-width="1" opacity="0.6"/>
             <path d="M8 12 L12 8 L16 12 L12 16 Z" fill="#6b9e3e" opacity="0.8"/>
           </svg>
-        `,u.style.cssText="display: inline-flex; align-items: center; line-height: 1; flex-shrink: 0;";const m=r.parentNode;m?(m.insertBefore(s,r),s.appendChild(u),s.appendChild(r)):(r.insertBefore(u,r.firstChild),r.style.cssText+="position: relative; display: inline-flex; align-items: center; gap: 4px; cursor: pointer;"),s.addEventListener("mouseenter",O),s.addEventListener("mouseleave",j)}else{const s=document.createElement("span");s.style.cssText="display: inline-flex; align-items: center; vertical-align: middle;",s.setAttribute("data-timecost-wrapper","true");const u=r.parentNode;u?(u.insertBefore(s,r),s.appendChild(r)):r.appendChild(s);const m=document.createElement("span");m.textContent=` ${p}`,m.setAttribute("data-timecost-element","true"),m.style.cssText=`
+        `,u.style.cssText="display: inline-flex; align-items: center; line-height: 1; flex-shrink: 0;";const m=r.parentNode;m?(m.insertBefore(s,r),s.appendChild(r),s.appendChild(u)):(r.appendChild(u),r.style.cssText+="position: relative; display: inline-flex; align-items: center; gap: 4px; cursor: pointer;"),s.addEventListener("mouseenter",O),s.addEventListener("mouseleave",j)}else{const s=document.createElement("span");s.style.cssText="display: inline-flex; align-items: center; vertical-align: middle;",s.setAttribute("data-timecost-wrapper","true");const u=r.parentNode;u?(u.insertBefore(s,r),s.appendChild(r)):r.appendChild(s);const m=document.createElement("span");m.textContent=` ${p}`,m.setAttribute("data-timecost-element","true"),m.style.cssText=`
           display: inline-flex;
           align-items: center;
           margin-left: 4px;
@@ -77,7 +77,7 @@ const U={USD:1,EUR:.92,BRL:5},N=/((R\$|€|\$)\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d
           <circle cx="12" cy="12" r="6" fill="none" stroke="#6b9e3e" stroke-width="1" opacity="0.6"/>
           <path d="M8 12 L12 8 L16 12 L12 16 Z" fill="#6b9e3e" opacity="0.8"/>
         </svg>
-      `,u.style.cssText="display: inline-flex; align-items: center; line-height: 1;";const m=document.createTextNode(p.match);s.appendChild(u),s.appendChild(m),s.setAttribute("data-timecost",p.timeCost),s.setAttribute("data-original-price",p.match),s.addEventListener("mouseenter",O),s.addEventListener("mouseleave",j),d.appendChild(s)}else{const s=document.createElement("span");s.style.cssText="display: inline-flex; align-items: center; vertical-align: middle;";const u=document.createElement("span");u.textContent=p.match,s.appendChild(u);const m=document.createElement("span");m.textContent=` ${p.timeCost}`,m.style.cssText=`
+      `,u.style.cssText="display: inline-flex; align-items: center; line-height: 1;";const m=document.createTextNode(p.match);s.appendChild(m),s.appendChild(u),s.setAttribute("data-timecost",p.timeCost),s.setAttribute("data-original-price",p.match),s.addEventListener("mouseenter",O),s.addEventListener("mouseleave",j),d.appendChild(s)}else{const s=document.createElement("span");s.style.cssText="display: inline-flex; align-items: center; vertical-align: middle;";const u=document.createElement("span");u.textContent=p.match,s.appendChild(u);const m=document.createElement("span");m.textContent=` ${p.timeCost}`,m.style.cssText=`
         display: inline-flex;
         align-items: center;
         margin-left: 4px;

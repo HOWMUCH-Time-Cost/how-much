@@ -135,11 +135,11 @@ export function processAmazonPrices(rootNode, userSalary, userCurrency, spacingM
         const parent = container.parentNode;
         if (parent) {
           parent.insertBefore(wrapper, container);
-          wrapper.appendChild(coinIcon);
           wrapper.appendChild(container);
+          wrapper.appendChild(coinIcon);
         } else {
-          // Fallback: prepend icon to container
-          container.insertBefore(coinIcon, container.firstChild);
+          // Fallback: append icon to container
+          container.appendChild(coinIcon);
           container.style.cssText += 'position: relative; display: inline-flex; align-items: center; gap: 4px; cursor: pointer;';
         }
         
