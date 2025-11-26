@@ -2018,7 +2018,7 @@ function App() {
               value={salary}
               onChange={handleSalaryChange}
               className={`pr-10 ${error.field === 'salary' ? 'border-destructive' : ''}`}
-              style={{ paddingLeft: '32px' }}
+              style={{ paddingLeft: '32px', backgroundColor: 'rgba(255, 255, 255, 0.08)' }}
               inputMode="numeric"
             />
             <Dialog open={salaryDialogOpen} onOpenChange={setSalaryDialogOpen}>
@@ -2066,7 +2066,8 @@ function App() {
                                 setHourlyWage('')
                               }
                             }}
-                            className="pl-10 h-8 text-sm bg-white/8"
+                            className="pl-10 h-8 text-sm"
+                            style={{ backgroundColor: 'rgba(255, 255, 255, 0.08)' }}
                             inputMode="numeric"
                           />
                         </div>
@@ -2080,7 +2081,8 @@ function App() {
                           placeholder="40"
                           value={hoursPerWeek}
                           onChange={(e) => setHoursPerWeek(e.target.value)}
-                          className="h-8 text-sm bg-white/8"
+                          className="h-8 text-sm"
+                          style={{ backgroundColor: 'rgba(255, 255, 255, 0.08)' }}
                           min="1"
                           max="168"
                         />
@@ -2108,7 +2110,8 @@ function App() {
                               return ''
                             })()}
                             readOnly
-                            className="pl-10 h-8 text-sm bg-white/8"
+                            className="pl-10 h-8 text-sm"
+                            style={{ backgroundColor: 'rgba(255, 255, 255, 0.08)' }}
                           />
                         </div>
                       </div>
