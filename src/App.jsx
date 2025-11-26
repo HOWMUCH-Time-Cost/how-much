@@ -2066,7 +2066,7 @@ function App() {
                                 setHourlyWage('')
                               }
                             }}
-                            className="pl-10 h-8 text-sm"
+                            className="pl-10 h-8 text-sm bg-white/8"
                             inputMode="numeric"
                           />
                         </div>
@@ -2080,7 +2080,7 @@ function App() {
                           placeholder="40"
                           value={hoursPerWeek}
                           onChange={(e) => setHoursPerWeek(e.target.value)}
-                          className="h-8 text-sm"
+                          className="h-8 text-sm bg-white/8"
                           min="1"
                           max="168"
                         />
