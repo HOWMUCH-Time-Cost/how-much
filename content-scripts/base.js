@@ -376,20 +376,20 @@ export function showHoverTooltip(event) {
       </div>
       <div style="height: 1px; background-color: rgba(0, 0, 0, 0.1); margin-bottom: 12px;"></div>
       <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">
-        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: rgba(0, 0, 0, 0.5);">
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700;">
           <span style="font-size: 16px;">🇯🇵</span>
-          <span>JPY</span>
-          <span style="margin-left: auto;">${jpyFormatted}</span>
+          <span style="color: rgba(0, 0, 0, 0.5);">JPY</span>
+          <span style="margin-left: auto; color: #000;">${jpyFormatted}</span>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: rgba(0, 0, 0, 0.5);">
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700;">
           <span style="font-size: 16px;">🇧🇷</span>
-          <span>BRL</span>
-          <span style="margin-left: auto;">${brlFormatted}</span>
+          <span style="color: rgba(0, 0, 0, 0.5);">BRL</span>
+          <span style="margin-left: auto; color: #000;">${brlFormatted}</span>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: rgba(0, 0, 0, 0.5);">
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700;">
           <span style="font-size: 16px;">🇪🇺</span>
-          <span>EUR</span>
-          <span style="margin-left: auto;">${eurFormatted}</span>
+          <span style="color: rgba(0, 0, 0, 0.5);">EUR</span>
+          <span style="margin-left: auto; color: #000;">${eurFormatted}</span>
         </div>
       </div>
       <div style="text-align: center; margin-top: 8px;">
