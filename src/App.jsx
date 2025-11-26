@@ -2045,13 +2045,6 @@ function App() {
                 </DialogHeader>
                 <div className="flex-1 overflow-auto p-4">
                   <div className="space-y-4">
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-sm">{t('wageCalculator', language)}</h4>
-                      <p className="text-xs text-muted-foreground">
-                        {t('wageCalculatorDescription', language)}
-                      </p>
-                    </div>
-                    
                     <div className="space-y-3">
                       <div className="space-y-1.5">
                         <Label htmlFor="hourly-wage" className="text-xs">{t('hourlyWage', language)}</Label>
