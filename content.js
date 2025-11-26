@@ -28,7 +28,7 @@ const v={USD:1,EUR:.92,BRL:5,JPY:150},N=/((R\$|€|\$)\s*(\d{1,3}(?:[.,]\d{3})*(
   `,r.style.cssText=`
     position: absolute;
     z-index: 999999;
-    width: 240px;
+    width: 200px;
     border-radius: 12px;
     background-color: #dafaa2;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
