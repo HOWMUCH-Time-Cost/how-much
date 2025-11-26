@@ -2193,7 +2193,7 @@ function App() {
           )}
         </div>
 
-        <Button onClick={handleSave} className="w-full font-bold" style={{ fontFamily: "'Boldonse', sans-serif" }} size="default">
+        <Button onClick={handleSave} className="w-full font-bold hover:opacity-90" style={{ fontFamily: "'Boldonse', sans-serif", backgroundColor: '#dafaa2', color: '#000' }} size="default">
           HOWMUCH?
         </Button>
 
