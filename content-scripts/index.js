@@ -69,6 +69,27 @@ chrome.storage.local.get(['userSalary', 'userCurrency', 'whitelist', 'spacingMod
 });
 
 function init() {
+  // Inject Boldonse font for consistent branding
+  if (!document.getElementById('howmuch-boldonse-font')) {
+    const fontLink = document.createElement('link');
+    fontLink.id = 'howmuch-boldonse-font';
+    fontLink.rel = 'preconnect';
+    fontLink.href = 'https://fonts.googleapis.com';
+    document.head.appendChild(fontLink);
+    
+    const fontLink2 = document.createElement('link');
+    fontLink2.rel = 'preconnect';
+    fontLink2.href = 'https://fonts.gstatic.com';
+    fontLink2.crossOrigin = 'anonymous';
+    document.head.appendChild(fontLink2);
+    
+    const fontStyle = document.createElement('link');
+    fontStyle.id = 'howmuch-boldonse-font-style';
+    fontStyle.rel = 'stylesheet';
+    fontStyle.href = 'https://fonts.googleapis.com/css2?family=Boldonse:wght@700&display=swap';
+    document.head.appendChild(fontStyle);
+  }
+  
   // Get the site handler for the current site
   const currentUrl = window.location.href;
   siteHandler = getSiteHandler(currentUrl);
