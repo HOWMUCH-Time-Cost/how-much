@@ -5,17 +5,17 @@ const v={USD:1,EUR:.92,BRL:5,JPY:150},N=/((R\$|€|\$)\s*(\d{1,3}(?:[.,]\d{3})*(
       </div>
       <div style="height: 1px; background-color: rgba(0, 0, 0, 0.1); margin-bottom: 12px;"></div>
       <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">
-        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #000;">
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: rgba(0, 0, 0, 0.5);">
           <span style="font-size: 16px;">🇯🇵</span>
           <span>JPY</span>
           <span style="margin-left: auto;">${f}</span>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #000;">
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: rgba(0, 0, 0, 0.5);">
           <span style="font-size: 16px;">🇧🇷</span>
           <span>BRL</span>
           <span style="margin-left: auto;">${x}</span>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #000;">
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: rgba(0, 0, 0, 0.5);">
           <span style="font-size: 16px;">🇪🇺</span>
           <span>EUR</span>
           <span style="margin-left: auto;">${p}</span>
