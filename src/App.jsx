@@ -2108,7 +2108,7 @@ function App() {
                               return ''
                             })()}
                             readOnly
-                            className="pl-10 h-8 text-sm bg-muted"
+                            className="pl-10 h-8 text-sm bg-white/8"
                           />
                         </div>
                       </div>
