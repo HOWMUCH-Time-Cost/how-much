@@ -83,7 +83,7 @@ const translations = {
     wageCalculator: 'Wage Calculator',
     wageCalculatorDescription: 'Calculate your wage in different periods',
     hourlyWage: 'Hourly wage',
-    hoursPerWeek: 'Hours per week',
+    hoursPerWeek: 'Work hours weekly',
     annualSalary: 'Annual salary',
     yourWageAs: 'Your wage as:',
     daily: 'Daily',
