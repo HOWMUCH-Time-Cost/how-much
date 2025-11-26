@@ -2197,6 +2197,17 @@ function App() {
           HOWMUCH?
         </Button>
 
+        <div className="text-center">
+          <a 
+            href="https://howmuch.userjot.com/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-xs text-muted-foreground hover:text-foreground underline transition-colors"
+          >
+            suggest a feature/feedback
+          </a>
+        </div>
+
         {status.show && (
           <Alert variant="success" className="animate-in slide-in-from-top-5 duration-300">
             <AlertDescription className="flex items-center gap-2">

@@ -6,6 +6,11 @@ module.exports = {
     "./popup.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  safelist: [
+    {
+      pattern: /bg-white\/8/,
+    },
+  ],
   theme: {
     extend: {
       fontFamily: {
