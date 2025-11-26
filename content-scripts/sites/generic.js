@@ -96,13 +96,13 @@ function processNode(textNode, userSalary, userCurrency, spacingMode) {
       priceWrapper.style.cssText = 'position: relative; display: inline-flex; align-items: center; gap: 4px;';
       priceWrapper.setAttribute('data-timecost-trigger', 'true');
       
-      // Create coin icon
+      // Create coin icon (Lucide circle-dollar-sign)
       const coinIcon = document.createElement('span');
       coinIcon.innerHTML = `
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle;">
-          <circle cx="12" cy="12" r="10" fill="#dafaa2" stroke="#a8d87a" stroke-width="1.5"/>
-          <circle cx="12" cy="12" r="6" fill="none" stroke="#6b9e3e" stroke-width="1" opacity="0.6"/>
-          <path d="M8 12 L12 8 L16 12 L12 16 Z" fill="#6b9e3e" opacity="0.8"/>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dafaa2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle;">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M16 10c0 .465 0 .697-.051.888a1.5 1.5 0 0 1-1.06 1.06C14.697 12 14.465 12 14 12h-4c-.465 0-.697 0-.888.051a1.5 1.5 0 0 0-1.06 1.06C8 13.303 8 13.535 8 14s0 .697.052.888a1.5 1.5 0 0 0 1.06 1.06c.19.052.423.052.888.052h4c.465 0 .697 0 .888-.052a1.5 1.5 0 0 0 1.06-1.06C16 14.697 16 14.465 16 14"/>
+          <path d="M12 6v12"/>
         </svg>
       `;
       coinIcon.style.cssText = 'display: inline-flex; align-items: center; line-height: 1;';
