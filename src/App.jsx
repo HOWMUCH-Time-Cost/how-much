@@ -2197,12 +2197,12 @@ function App() {
           HOWMUCH?
         </Button>
 
-        <div className="text-center">
+        <div className="text-center -mt-2">
           <a 
             href="https://howmuch.userjot.com/" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-xs text-muted-foreground hover:text-foreground underline transition-colors"
+            className="text-xs text-muted-foreground hover:text-foreground hover:underline transition-colors"
           >
             suggest a feature/feedback
           </a>
