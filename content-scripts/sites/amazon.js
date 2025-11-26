@@ -112,13 +112,39 @@ export function processAmazonPrices(rootNode, userSalary, userCurrency, spacingM
           container.parentNode.replaceChild(timeCostSpan, container);
         }
       } else if (spacingMode === 'comfortable') {
-        // Comfortable mode: Add hover trigger to price container
-        container.style.cssText += 'position: relative; display: inline-block; cursor: pointer;';
-        container.setAttribute('data-timecost-trigger', 'true');
-        container.setAttribute('data-timecost', timeCost);
-        container.setAttribute('data-original-price', priceText);
-        container.addEventListener('mouseenter', showHoverTooltip);
-        container.addEventListener('mouseleave', hideHoverTooltip);
+        // Comfortable mode: Add hover trigger to price container with coin icon
+        // Wrap container in a flex wrapper to add coin icon
+        const wrapper = document.createElement('span');
+        wrapper.style.cssText = 'display: inline-flex; align-items: center; gap: 4px; position: relative; cursor: pointer;';
+        wrapper.setAttribute('data-timecost-trigger', 'true');
+        wrapper.setAttribute('data-timecost', timeCost);
+        wrapper.setAttribute('data-original-price', priceText);
+        
+        // Create coin icon
+        const coinIcon = document.createElement('span');
+        coinIcon.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle;">
+            <circle cx="12" cy="12" r="10" fill="#dafaa2" stroke="#a8d87a" stroke-width="1.5"/>
+            <circle cx="12" cy="12" r="6" fill="none" stroke="#6b9e3e" stroke-width="1" opacity="0.6"/>
+            <path d="M8 12 L12 8 L16 12 L12 16 Z" fill="#6b9e3e" opacity="0.8"/>
+          </svg>
+        `;
+        coinIcon.style.cssText = 'display: inline-flex; align-items: center; line-height: 1; flex-shrink: 0;';
+        
+        // Insert wrapper before container and move container into wrapper
+        const parent = container.parentNode;
+        if (parent) {
+          parent.insertBefore(wrapper, container);
+          wrapper.appendChild(coinIcon);
+          wrapper.appendChild(container);
+        } else {
+          // Fallback: prepend icon to container
+          container.insertBefore(coinIcon, container.firstChild);
+          container.style.cssText += 'position: relative; display: inline-flex; align-items: center; gap: 4px; cursor: pointer;';
+        }
+        
+        wrapper.addEventListener('mouseenter', showHoverTooltip);
+        wrapper.addEventListener('mouseleave', hideHoverTooltip);
       } else {
         // Default mode: Show price + time cost side by side
         // Wrap both elements in a flex container for proper center alignment

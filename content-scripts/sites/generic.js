@@ -91,11 +91,28 @@ function processNode(textNode, userSalary, userCurrency, spacingMode) {
       `;
       fragment.appendChild(timeCostSpan);
     } else if (spacingMode === 'comfortable') {
-      // Comfortable mode: Show price, hover shows time cost in tooltip
+      // Comfortable mode: Show price with coin icon, hover shows time cost in tooltip
       const priceWrapper = document.createElement('span');
-      priceWrapper.style.cssText = 'position: relative; display: inline-block;';
+      priceWrapper.style.cssText = 'position: relative; display: inline-flex; align-items: center; gap: 4px;';
       priceWrapper.setAttribute('data-timecost-trigger', 'true');
-      priceWrapper.textContent = matchData.match;
+      
+      // Create coin icon
+      const coinIcon = document.createElement('span');
+      coinIcon.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle;">
+          <circle cx="12" cy="12" r="10" fill="#dafaa2" stroke="#a8d87a" stroke-width="1.5"/>
+          <circle cx="12" cy="12" r="6" fill="none" stroke="#6b9e3e" stroke-width="1" opacity="0.6"/>
+          <path d="M8 12 L12 8 L16 12 L12 16 Z" fill="#6b9e3e" opacity="0.8"/>
+        </svg>
+      `;
+      coinIcon.style.cssText = 'display: inline-flex; align-items: center; line-height: 1;';
+      
+      // Create price text
+      const priceText = document.createTextNode(matchData.match);
+      
+      // Append icon and text
+      priceWrapper.appendChild(coinIcon);
+      priceWrapper.appendChild(priceText);
       
       // Store time cost data for hover tooltip
       priceWrapper.setAttribute('data-timecost', matchData.timeCost);

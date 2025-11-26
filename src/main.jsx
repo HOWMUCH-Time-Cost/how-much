@@ -10,11 +10,11 @@ if (!rootElement) {
 } else {
   console.log('Root element found, mounting app...')
   ReactDOM.createRoot(rootElement).render(
-    <React.StrictMode>
+  <React.StrictMode>
       <ErrorBoundary>
-        <App />
+    <App />
       </ErrorBoundary>
-    </React.StrictMode>,
-  )
+  </React.StrictMode>,
+)
 }
 
